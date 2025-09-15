@@ -10,7 +10,7 @@
 
 #define DM_VERSION_MAJOR    0
 #define DM_VERSION_MINOR    17
-#define DM_VERSION_REVISION 0
+#define DM_VERSION_REVISION 1
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)

@@ -243,7 +243,7 @@ namespace DarkMode
 	 *
 	 * @see LibInfo
 	 */
-	int getLibInfo(LibInfo libInfoType)
+	DARKMODE_API int getLibInfo(LibInfo libInfoType)
 	{
 		switch (libInfoType)
 		{
@@ -915,7 +915,7 @@ namespace DarkMode
 	 * @see DarkMode::getColorTone()
 	 * @see DarkMode::Theme
 	 */
-	void setColorTone(ColorTone colorTone)
+	DARKMODE_API void setColorTone(ColorTone colorTone)
 	{
 		DarkMode::getTheme().setToneColors(colorTone);
 	}
@@ -927,7 +927,7 @@ namespace DarkMode
 	 *
 	 * @see DarkMode::setColorTone()
 	 */
-	ColorTone getColorTone()
+	DARKMODE_API ColorTone getColorTone()
 	{
 		return DarkMode::getTheme().getColorTone();
 	}
@@ -1056,92 +1056,92 @@ namespace DarkMode
 		return clrTmp;
 	}
 
-	COLORREF setBackgroundColor(COLORREF clrNew)        { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.background, clrNew); }
-	COLORREF setCtrlBackgroundColor(COLORREF clrNew)    { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.ctrlBackground, clrNew); }
-	COLORREF setHotBackgroundColor(COLORREF clrNew)     { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.hotBackground, clrNew); }
-	COLORREF setDlgBackgroundColor(COLORREF clrNew)     { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.dlgBackground, clrNew); }
-	COLORREF setErrorBackgroundColor(COLORREF clrNew)   { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.errorBackground, clrNew); }
-	COLORREF setTextColor(COLORREF clrNew)              { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.text, clrNew); }
-	COLORREF setDarkerTextColor(COLORREF clrNew)        { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.darkerText, clrNew); }
-	COLORREF setDisabledTextColor(COLORREF clrNew)      { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.disabledText, clrNew); }
-	COLORREF setLinkTextColor(COLORREF clrNew)          { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.linkText, clrNew); }
-	COLORREF setEdgeColor(COLORREF clrNew)              { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.edge, clrNew); }
-	COLORREF setHotEdgeColor(COLORREF clrNew)           { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.hotEdge, clrNew); }
-	COLORREF setDisabledEdgeColor(COLORREF clrNew)      { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.disabledEdge, clrNew); }
+	DARKMODE_API COLORREF setBackgroundColor(COLORREF clrNew)        { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.background, clrNew); }
+	DARKMODE_API COLORREF setCtrlBackgroundColor(COLORREF clrNew)    { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.ctrlBackground, clrNew); }
+	DARKMODE_API COLORREF setHotBackgroundColor(COLORREF clrNew)     { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.hotBackground, clrNew); }
+	DARKMODE_API COLORREF setDlgBackgroundColor(COLORREF clrNew)     { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.dlgBackground, clrNew); }
+	DARKMODE_API COLORREF setErrorBackgroundColor(COLORREF clrNew)   { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.errorBackground, clrNew); }
+	DARKMODE_API COLORREF setTextColor(COLORREF clrNew)              { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.text, clrNew); }
+	DARKMODE_API COLORREF setDarkerTextColor(COLORREF clrNew)        { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.darkerText, clrNew); }
+	DARKMODE_API COLORREF setDisabledTextColor(COLORREF clrNew)      { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.disabledText, clrNew); }
+	DARKMODE_API COLORREF setLinkTextColor(COLORREF clrNew)          { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.linkText, clrNew); }
+	DARKMODE_API COLORREF setEdgeColor(COLORREF clrNew)              { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.edge, clrNew); }
+	DARKMODE_API COLORREF setHotEdgeColor(COLORREF clrNew)           { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.hotEdge, clrNew); }
+	DARKMODE_API COLORREF setDisabledEdgeColor(COLORREF clrNew)      { return DarkMode::setNewColor(&DarkMode::getTheme().m_colors.disabledEdge, clrNew); }
 
-	void setThemeColors(Colors colors)
+	DARKMODE_API void setThemeColors(Colors colors)
 	{
 		DarkMode::getTheme().updateTheme(colors);
 	}
 
-	void updateThemeBrushesAndPens()
+	DARKMODE_API void updateThemeBrushesAndPens()
 	{
 		DarkMode::getTheme().updateTheme();
 	}
 
-	COLORREF getBackgroundColor()         { return getTheme().m_colors.background; }
-	COLORREF getCtrlBackgroundColor()     { return getTheme().m_colors.ctrlBackground; }
-	COLORREF getHotBackgroundColor()      { return getTheme().m_colors.hotBackground; }
-	COLORREF getDlgBackgroundColor()      { return getTheme().m_colors.dlgBackground; }
-	COLORREF getErrorBackgroundColor()    { return getTheme().m_colors.errorBackground; }
-	COLORREF getTextColor()               { return getTheme().m_colors.text; }
-	COLORREF getDarkerTextColor()         { return getTheme().m_colors.darkerText; }
-	COLORREF getDisabledTextColor()       { return getTheme().m_colors.disabledText; }
-	COLORREF getLinkTextColor()           { return getTheme().m_colors.linkText; }
-	COLORREF getEdgeColor()               { return getTheme().m_colors.edge; }
-	COLORREF getHotEdgeColor()            { return getTheme().m_colors.hotEdge; }
-	COLORREF getDisabledEdgeColor()       { return getTheme().m_colors.disabledEdge; }
+	DARKMODE_API COLORREF getBackgroundColor()         { return getTheme().m_colors.background; }
+	DARKMODE_API COLORREF getCtrlBackgroundColor()     { return getTheme().m_colors.ctrlBackground; }
+	DARKMODE_API COLORREF getHotBackgroundColor()      { return getTheme().m_colors.hotBackground; }
+	DARKMODE_API COLORREF getDlgBackgroundColor()      { return getTheme().m_colors.dlgBackground; }
+	DARKMODE_API COLORREF getErrorBackgroundColor()    { return getTheme().m_colors.errorBackground; }
+	DARKMODE_API COLORREF getTextColor()               { return getTheme().m_colors.text; }
+	DARKMODE_API COLORREF getDarkerTextColor()         { return getTheme().m_colors.darkerText; }
+	DARKMODE_API COLORREF getDisabledTextColor()       { return getTheme().m_colors.disabledText; }
+	DARKMODE_API COLORREF getLinkTextColor()           { return getTheme().m_colors.linkText; }
+	DARKMODE_API COLORREF getEdgeColor()               { return getTheme().m_colors.edge; }
+	DARKMODE_API COLORREF getHotEdgeColor()            { return getTheme().m_colors.hotEdge; }
+	DARKMODE_API COLORREF getDisabledEdgeColor()       { return getTheme().m_colors.disabledEdge; }
 
-	HBRUSH getBackgroundBrush()           { return getTheme().getBrushes().m_background; }
-	HBRUSH getCtrlBackgroundBrush()       { return getTheme().getBrushes().m_ctrlBackground; }
-	HBRUSH getHotBackgroundBrush()        { return getTheme().getBrushes().m_hotBackground; }
-	HBRUSH getDlgBackgroundBrush()        { return getTheme().getBrushes().m_dlgBackground; }
-	HBRUSH getErrorBackgroundBrush()      { return getTheme().getBrushes().m_errorBackground; }
+	DARKMODE_API HBRUSH getBackgroundBrush()           { return getTheme().getBrushes().m_background; }
+	DARKMODE_API HBRUSH getCtrlBackgroundBrush()       { return getTheme().getBrushes().m_ctrlBackground; }
+	DARKMODE_API HBRUSH getHotBackgroundBrush()        { return getTheme().getBrushes().m_hotBackground; }
+	DARKMODE_API HBRUSH getDlgBackgroundBrush()        { return getTheme().getBrushes().m_dlgBackground; }
+	DARKMODE_API HBRUSH getErrorBackgroundBrush()      { return getTheme().getBrushes().m_errorBackground; }
 
-	HBRUSH getEdgeBrush()                 { return getTheme().getBrushes().m_edge; }
-	HBRUSH getHotEdgeBrush()              { return getTheme().getBrushes().m_hotEdge; }
-	HBRUSH getDisabledEdgeBrush()         { return getTheme().getBrushes().m_disabledEdge; }
+	DARKMODE_API HBRUSH getEdgeBrush()                 { return getTheme().getBrushes().m_edge; }
+	DARKMODE_API HBRUSH getHotEdgeBrush()              { return getTheme().getBrushes().m_hotEdge; }
+	DARKMODE_API HBRUSH getDisabledEdgeBrush()         { return getTheme().getBrushes().m_disabledEdge; }
 
-	HPEN getDarkerTextPen()               { return getTheme().getPens().m_darkerText; }
-	HPEN getEdgePen()                     { return getTheme().getPens().m_edge; }
-	HPEN getHotEdgePen()                  { return getTheme().getPens().m_hotEdge; }
-	HPEN getDisabledEdgePen()             { return getTheme().getPens().m_disabledEdge; }
+	DARKMODE_API HPEN getDarkerTextPen()               { return getTheme().getPens().m_darkerText; }
+	DARKMODE_API HPEN getEdgePen()                     { return getTheme().getPens().m_edge; }
+	DARKMODE_API HPEN getHotEdgePen()                  { return getTheme().getPens().m_hotEdge; }
+	DARKMODE_API HPEN getDisabledEdgePen()             { return getTheme().getPens().m_disabledEdge; }
 
-	COLORREF setViewBackgroundColor(COLORREF clrNew)        { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.background, clrNew); }
-	COLORREF setViewTextColor(COLORREF clrNew)              { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.text, clrNew); }
-	COLORREF setViewGridlinesColor(COLORREF clrNew)         { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.gridlines, clrNew); }
+	DARKMODE_API COLORREF setViewBackgroundColor(COLORREF clrNew)        { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.background, clrNew); }
+	DARKMODE_API COLORREF setViewTextColor(COLORREF clrNew)              { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.text, clrNew); }
+	DARKMODE_API COLORREF setViewGridlinesColor(COLORREF clrNew)         { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.gridlines, clrNew); }
 
-	COLORREF setHeaderBackgroundColor(COLORREF clrNew)      { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.headerBackground, clrNew); }
-	COLORREF setHeaderHotBackgroundColor(COLORREF clrNew)   { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.headerHotBackground, clrNew); }
-	COLORREF setHeaderTextColor(COLORREF clrNew)            { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.headerText, clrNew); }
-	COLORREF setHeaderEdgeColor(COLORREF clrNew)            { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.headerEdge, clrNew); }
+	DARKMODE_API COLORREF setHeaderBackgroundColor(COLORREF clrNew)      { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.headerBackground, clrNew); }
+	DARKMODE_API COLORREF setHeaderHotBackgroundColor(COLORREF clrNew)   { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.headerHotBackground, clrNew); }
+	DARKMODE_API COLORREF setHeaderTextColor(COLORREF clrNew)            { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.headerText, clrNew); }
+	DARKMODE_API COLORREF setHeaderEdgeColor(COLORREF clrNew)            { return DarkMode::setNewColor(&DarkMode::getThemeView().m_clrView.headerEdge, clrNew); }
 
-	void setViewColors(ColorsView colors)
+	DARKMODE_API void setViewColors(ColorsView colors)
 	{
 		DarkMode::getThemeView().updateView(colors);
 	}
 
-	void updateViewBrushesAndPens()
+	DARKMODE_API void updateViewBrushesAndPens()
 	{
 		DarkMode::getThemeView().updateView();
 	}
 
-	COLORREF getViewBackgroundColor()       { return DarkMode::getThemeView().m_clrView.background; }
-	COLORREF getViewTextColor()             { return DarkMode::getThemeView().m_clrView.text; }
-	COLORREF getViewGridlinesColor()        { return DarkMode::getThemeView().m_clrView.gridlines; }
+	DARKMODE_API COLORREF getViewBackgroundColor()       { return DarkMode::getThemeView().m_clrView.background; }
+	DARKMODE_API COLORREF getViewTextColor()             { return DarkMode::getThemeView().m_clrView.text; }
+	DARKMODE_API COLORREF getViewGridlinesColor()        { return DarkMode::getThemeView().m_clrView.gridlines; }
 
-	COLORREF getHeaderBackgroundColor()     { return DarkMode::getThemeView().m_clrView.headerBackground; }
-	COLORREF getHeaderHotBackgroundColor()  { return DarkMode::getThemeView().m_clrView.headerHotBackground; }
-	COLORREF getHeaderTextColor()           { return DarkMode::getThemeView().m_clrView.headerText; }
-	COLORREF getHeaderEdgeColor()           { return DarkMode::getThemeView().m_clrView.headerEdge; }
+	DARKMODE_API COLORREF getHeaderBackgroundColor()     { return DarkMode::getThemeView().m_clrView.headerBackground; }
+	DARKMODE_API COLORREF getHeaderHotBackgroundColor()  { return DarkMode::getThemeView().m_clrView.headerHotBackground; }
+	DARKMODE_API COLORREF getHeaderTextColor()           { return DarkMode::getThemeView().m_clrView.headerText; }
+	DARKMODE_API COLORREF getHeaderEdgeColor()           { return DarkMode::getThemeView().m_clrView.headerEdge; }
 
-	HBRUSH getViewBackgroundBrush()         { return DarkMode::getThemeView().getViewBrushesAndPens().m_background; }
-	HBRUSH getViewGridlinesBrush()          { return DarkMode::getThemeView().getViewBrushesAndPens().m_gridlines; }
+	DARKMODE_API HBRUSH getViewBackgroundBrush()         { return DarkMode::getThemeView().getViewBrushesAndPens().m_background; }
+	DARKMODE_API HBRUSH getViewGridlinesBrush()          { return DarkMode::getThemeView().getViewBrushesAndPens().m_gridlines; }
 
-	HBRUSH getHeaderBackgroundBrush()       { return DarkMode::getThemeView().getViewBrushesAndPens().m_headerBackground; }
-	HBRUSH getHeaderHotBackgroundBrush()    { return DarkMode::getThemeView().getViewBrushesAndPens().m_headerHotBackground; }
+	DARKMODE_API HBRUSH getHeaderBackgroundBrush()       { return DarkMode::getThemeView().getViewBrushesAndPens().m_headerBackground; }
+	DARKMODE_API HBRUSH getHeaderHotBackgroundBrush()    { return DarkMode::getThemeView().getViewBrushesAndPens().m_headerHotBackground; }
 
-	HPEN getHeaderEdgePen()                 { return DarkMode::getThemeView().getViewBrushesAndPens().m_headerEdge; }
+	DARKMODE_API HPEN getHeaderEdgePen()                 { return DarkMode::getThemeView().getViewBrushesAndPens().m_headerEdge; }
 
 	/**
 	 * @brief Initializes default color set based on the current mode type.
@@ -1161,7 +1161,7 @@ namespace DarkMode
 	 * @see DarkMode::updateThemeBrushesAndPens
 	 * @see DarkMode::calculateTreeViewStyle
 	 */
-	void setDefaultColors(bool updateBrushesAndOther)
+	DARKMODE_API void setDefaultColors(bool updateBrushesAndOther)
 	{
 		switch (g_dmCfg.m_dmType)
 		{
@@ -1215,7 +1215,7 @@ namespace DarkMode
 	 * @see WinMode
 	 * @see DarkMode::isDarkModeReg()
 	 */
-	void initDarkModeConfig(UINT dmType)
+	DARKMODE_API void initDarkModeConfig(UINT dmType)
 	{
 		switch (dmType)
 		{
@@ -1268,7 +1268,7 @@ namespace DarkMode
 	 * @see https://learn.microsoft.com/windows/win32/api/dwmapi/ne-dwmapi-dwm_window_corner_preference
 	 * @see DarkMode::setDarkTitleBarEx()
 	 */
-	void setRoundCornerConfig(UINT roundCornerStyle)
+	DARKMODE_API void setRoundCornerConfig(UINT roundCornerStyle)
 	{
 		const auto cornerStyle = static_cast<DWM_WINDOW_CORNER_PREFERENCE>(roundCornerStyle);
 		if (cornerStyle > DWMWCP_ROUNDSMALL) // || cornerStyle < DWMWCP_DEFAULT) // should never be < 0
@@ -1294,7 +1294,7 @@ namespace DarkMode
 	 * @see DWMWA_BORDER_COLOR
 	 * @see DarkMode::setDarkTitleBarEx()
 	 */
-	void setBorderColorConfig(COLORREF clr)
+	DARKMODE_API void setBorderColorConfig(COLORREF clr)
 	{
 		if (clr == kDwmwaClrDefaultRGBCheck)
 		{
@@ -1317,7 +1317,7 @@ namespace DarkMode
 	 * @see DWM_SYSTEMBACKDROP_TYPE
 	 * @see DarkMode::setDarkTitleBarEx()
 	 */
-	void setMicaConfig(UINT mica)
+	DARKMODE_API void setMicaConfig(UINT mica)
 	{
 		const auto micaType = static_cast<DWM_SYSTEMBACKDROP_TYPE>(mica);
 		if (micaType > DWMSBT_TABBEDWINDOW) // || micaType < DWMSBT_AUTO)  // should never be < 0
@@ -1340,7 +1340,7 @@ namespace DarkMode
 	 *
 	 * @see DarkMode::setDarkTitleBarEx()
 	 */
-	void setMicaExtendedConfig(bool extendMica)
+	DARKMODE_API void setMicaExtendedConfig(bool extendMica)
 	{
 		g_dmCfg.m_micaExtend = extendMica;
 	}
@@ -1354,7 +1354,7 @@ namespace DarkMode
 	 *
 	 * @see DarkMode::setDarkTitleBarEx()
 	 */
-	void setColorizeTitleBarConfig(bool colorize)
+	DARKMODE_API void setColorizeTitleBarConfig(bool colorize)
 	{
 		g_dmCfg.m_colorizeTitleBar = colorize;
 	}
@@ -1573,7 +1573,7 @@ namespace DarkMode
 	 * @see DarkMode::initDarkModeConfig()
 	 * @see DarkMode::setDefaultColors()
 	 */
-	void setDarkModeConfig(UINT dmType)
+	DARKMODE_API void setDarkModeConfig(UINT dmType)
 	{
 		DarkMode::initDarkModeConfig(dmType);
 
@@ -1594,7 +1594,7 @@ namespace DarkMode
 	 *
 	 * @see DarkMode::setDefaultColors()
 	 */
-	void setDarkModeConfig()
+	DARKMODE_API void setDarkModeConfig()
 	{
 		const auto dmType = static_cast<UINT>(DarkMode::isDarkModeReg() ? DarkModeType::dark : DarkModeType::classic);
 		DarkMode::setDarkModeConfig(dmType);
@@ -1618,7 +1618,7 @@ namespace DarkMode
 	 *
 	 * @see DarkMode::calculateTreeViewStyle()
 	 */
-	void initDarkMode([[maybe_unused]] const wchar_t* iniName)
+	DARKMODE_API void initDarkMode([[maybe_unused]] const wchar_t* iniName)
 	{
 		if (!g_dmCfg.m_isInit)
 		{
@@ -1659,7 +1659,7 @@ namespace DarkMode
 	 *
 	 * Forwards to @ref DarkMode::initDarkMode with an empty INI path, effectively disabling INI settings.
 	 */
-	void initDarkMode()
+	DARKMODE_API void initDarkMode()
 	{
 		DarkMode::initDarkMode(L"");
 	}
@@ -1673,7 +1673,7 @@ namespace DarkMode
 	 *
 	 * @return `true` if a supported dark mode type is active, otherwise `false`.
 	 */
-	bool isEnabled()
+	DARKMODE_API bool isEnabled()
 	{
 #if defined(_DARKMODELIB_ALLOW_OLD_OS) && (_DARKMODELIB_ALLOW_OLD_OS > 1)
 		return g_dmCfg.m_dmType != DarkModeType::classic;
@@ -1687,7 +1687,7 @@ namespace DarkMode
 	 *
 	 * @return `true` if experimental dark mode is enabled.
 	 */
-	bool isExperimentalActive()
+	DARKMODE_API bool isExperimentalActive()
 	{
 		return g_darkModeEnabled;
 	}
@@ -1697,7 +1697,7 @@ namespace DarkMode
 	 *
 	 * @return `true` if dark mode experimental APIs are available.
 	 */
-	bool isExperimentalSupported()
+	DARKMODE_API bool isExperimentalSupported()
 	{
 		return g_darkModeSupported;
 	}
@@ -1707,7 +1707,7 @@ namespace DarkMode
 	 *
 	 * @return `true` if "mode" is not `WinMode::disabled`, i.e. system mode is followed.
 	 */
-	bool isWindowsModeEnabled()
+	DARKMODE_API bool isWindowsModeEnabled()
 	{
 		return g_dmCfg.m_windowsMode != WinMode::disabled;
 	}
@@ -1717,7 +1717,7 @@ namespace DarkMode
 	 *
 	 * @return `true` if running on Windows 10 or newer.
 	 */
-	bool isAtLeastWindows10()
+	DARKMODE_API bool isAtLeastWindows10()
 	{
 		return ::IsWindows10();
 	}
@@ -1726,7 +1726,7 @@ namespace DarkMode
 	 *
 	 * @return `true` if running on Windows 11 or newer.
 	 */
-	bool isAtLeastWindows11()
+	DARKMODE_API bool isAtLeastWindows11()
 	{
 		return ::IsWindows11();
 	}
@@ -1736,7 +1736,7 @@ namespace DarkMode
 	 *
 	 * @return Windows build number reported by the system.
 	 */
-	DWORD getWindowsBuildNumber()
+	DARKMODE_API DWORD getWindowsBuildNumber()
 	{
 		return GetWindowsBuildNumber();
 	}
@@ -1757,7 +1757,7 @@ namespace DarkMode
 	 * @see DarkMode::isDarkModeReg()
 	 * @see DarkMode::initDarkMode()
 	 */
-	bool handleSettingChange(LPARAM lParam)
+	DARKMODE_API bool handleSettingChange(LPARAM lParam)
 	{
 		if (DarkMode::isExperimentalSupported() && DarkMode::isColorSchemeChangeMessage(lParam))
 		{
@@ -1783,7 +1783,7 @@ namespace DarkMode
 	 *
 	 * @return `true` if dark mode is preferred (value is `0`); otherwise `false`.
 	 */
-	bool isDarkModeReg()
+	DARKMODE_API bool isDarkModeReg()
 	{
 		DWORD data{};
 		DWORD dwBufSize = sizeof(data);
@@ -1813,7 +1813,7 @@ namespace DarkMode
 	 * @param nIndex    One of the supported system color indices.
 	 * @param color     Custom `COLORREF` value to apply.
 	 */
-	void setSysColor(int nIndex, COLORREF color)
+	DARKMODE_API void setSysColor(int nIndex, COLORREF color)
 	{
 		::SetMySysColor(nIndex, color);
 	}
@@ -1847,7 +1847,7 @@ namespace DarkMode
 	 *
 	 * @param hWnd Handle to the parent window.
 	 */
-	void enableDarkScrollBarForWindowAndChildren([[maybe_unused]] HWND hWnd)
+	DARKMODE_API void enableDarkScrollBarForWindowAndChildren([[maybe_unused]] HWND hWnd)
 	{
 #if defined(_DARKMODELIB_USE_SCROLLBAR_FIX) && (_DARKMODELIB_USE_SCROLLBAR_FIX > 0)
 		::EnableDarkScrollBarForWindowAndChildren(hWnd);
@@ -1867,7 +1867,7 @@ namespace DarkMode
 	 * @param width     Horizontal corner radius.
 	 * @param height    Vertical corner radius.
 	 */
-	void paintRoundRect(HDC hdc, const RECT& rect, HPEN hpen, HBRUSH hBrush, int width, int height)
+	DARKMODE_API void paintRoundRect(HDC hdc, const RECT& rect, HPEN hpen, HBRUSH hBrush, int width, int height)
 	{
 		auto holdBrush = ::SelectObject(hdc, hBrush);
 		auto holdPen = ::SelectObject(hdc, hpen);
@@ -1887,7 +1887,7 @@ namespace DarkMode
 	 * @param width     Horizontal corner radius.
 	 * @param height    Vertical corner radius.
 	 */
-	void paintRoundFrameRect(HDC hdc, const RECT& rect, HPEN hpen, int width, int height)
+	DARKMODE_API void paintRoundFrameRect(HDC hdc, const RECT& rect, HPEN hpen, int width, int height)
 	{
 		DarkMode::paintRoundRect(hdc, rect, hpen, static_cast<HBRUSH>(::GetStockObject(NULL_BRUSH)), width, height);
 	}

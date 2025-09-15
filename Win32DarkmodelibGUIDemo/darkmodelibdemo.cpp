@@ -22,7 +22,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	[[maybe_unused]] _In_ LPWSTR /*lpCmdLine*/,
 	_In_ int nShowCmd)
 {
+#ifndef DARKMODE_DLL
 	SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
+#endif
 	SetDllDirectoryW(L"");
 
 	DarkMode::initDarkMode();
