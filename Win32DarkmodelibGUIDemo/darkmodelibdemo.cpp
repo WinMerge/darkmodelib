@@ -231,6 +231,55 @@ static void SelectAndRefreshMode(HWND hWnd, UINT checkID)
 	RedrawWindow(hWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_FRAME);
 }
 
+enum TaskDlgBtnID
+{
+	radio_1 = 100,
+	radio_2,
+	radio_3,
+	radio_4,
+	cmd_1,
+	cmd_2,
+	cmd_3,
+	cmd_4,
+	cmd_5
+};
+
+static HRESULT CALLBACK TaskDlgCallback(
+	HWND hWnd,
+	UINT msg,
+	[[maybe_unused]] WPARAM wParam,
+	[[maybe_unused]] LPARAM lParam,
+	[[maybe_unused]] LONG_PTR lpRefData
+)
+{
+	switch (msg)
+	{
+		case TDN_CREATED:
+		{
+			SendMessageW(hWnd, TDM_ENABLE_RADIO_BUTTON, static_cast<WPARAM>(radio_2), FALSE);
+			SendMessageW(hWnd, TDM_SET_PROGRESS_BAR_MARQUEE, TRUE, 0);
+
+			SendMessageW(hWnd, TDM_ENABLE_BUTTON, static_cast<WPARAM>(cmd_2), FALSE);
+			SendMessageW(hWnd, TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE, static_cast<WPARAM>(cmd_3), TRUE);
+			SendMessageW(hWnd, TDM_ENABLE_BUTTON, static_cast<WPARAM>(cmd_4), FALSE);
+			SendMessageW(hWnd, TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE, static_cast<WPARAM>(cmd_4), TRUE);
+			break;
+		}
+
+		case TDN_DIALOG_CONSTRUCTED:
+		{
+			DarkMode::setDarkTaskDlg(hWnd);
+			break;
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+	return S_OK;
+}
+
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -410,7 +459,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			static constexpr int imgSize = 16;
 			static auto hImageList = ImageList_Create(imgSize, imgSize, ILC_COLOR32 | ILC_MASK, 1, 1);
-			HICON hIcon = static_cast<HICON>(
+			auto hIcon = static_cast<HICON>(
 				LoadImageW(g_hInst, MAKEINTRESOURCEW(IDI_DEMO), IMAGE_ICON, imgSize, imgSize, LR_DEFAULTCOLOR));
 			ImageList_AddIcon(hImageList, hIcon);
 			DestroyIcon(hIcon);
@@ -420,7 +469,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			for (size_t i = 0; i < nBtn; ++i)
 			{
 				tbb.at(i).iBitmap = 0;
-				tbb.at(i).idCommand = 10000 + static_cast<UINT>(i);
+				tbb.at(i).idCommand = 10000 + static_cast<int>(i);
 				tbb.at(i).fsState = TBSTATE_ENABLED;
 				tbb.at(i).fsStyle = BTNS_BUTTON;
 			}
@@ -599,7 +648,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				xPos2ndColCtrl, yCombo1, wEditCombo, 100, IdCtrl::comboDrop);
 			for (int i = 0; i < 4; ++i)
 			{
-				std::wstring itemText = L"Item " + std::to_wstring(i + 1);
+				const std::wstring itemText = L"Item " + std::to_wstring(i + 1);
 				SendMessageW(hCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(itemText.c_str()));
 			}
 			SetWindowTextW(hCombo, L"Item 1");
@@ -614,7 +663,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				xPos2ndColCtrl, yCombo3, wEditCombo, 100, IdCtrl::comboList);
 			for (int i = 0; i < 4; ++i)
 			{
-				std::wstring itemText = L"Item " + std::to_wstring(i + 1);
+				const std::wstring itemText = L"Item " + std::to_wstring(i + 1);
 				SendMessageW(hComboList, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(itemText.c_str()));
 			}
 			SendMessageW(hComboList, CB_SETCURSEL, 0, 0);
@@ -864,7 +913,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 							return ncm.lfMessageFont;
 						}
 						return LOGFONTW{};
-						}();
+					}();
 
 					CHOOSEFONTW cf{};
 					cf.lStructSize = sizeof(cf);
@@ -877,6 +926,53 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					cf.lpTemplateName = MAKEINTRESOURCE(IDD_DARK_FONT_DIALOG);
 
 					ChooseFontW(&cf);
+					break;
+				}
+
+				case IDM_TASKDIALOG:
+				{
+					static constexpr std::array<TASKDIALOG_BUTTON, 4> radioBtn{ {
+						{radio_1, L"Radio button 1"},
+						{radio_2, L"Radio button 2 (disabled)"},
+						{radio_3, L"Radio button 3"},
+						{radio_4, L"Radio button 4\nwith\nmultiple\nlines"}
+					} };
+
+					static constexpr std::array<TASKDIALOG_BUTTON, 5> commandBtn{ {
+						{cmd_1, L"Command link 1"},
+						{cmd_2, L"Command link 2 (disabled)"},
+						{cmd_3, L"Command link 3 with shield"},
+						{cmd_4, L"Command link 4 with shield (disabled)"},
+						{cmd_5, L"Command link 5\nwith\nmultiple\nlines"}
+					} };
+
+					TASKDIALOGCONFIG taskDlgCfg{};
+					taskDlgCfg.cbSize = sizeof(TASKDIALOGCONFIG);
+					taskDlgCfg.hwndParent = hWnd;
+					taskDlgCfg.hInstance = nullptr;
+					taskDlgCfg.dwFlags = TDF_ENABLE_HYPERLINKS | TDF_ALLOW_DIALOG_CANCELLATION | TDF_USE_COMMAND_LINKS | TDF_EXPAND_FOOTER_AREA | TDF_SHOW_MARQUEE_PROGRESS_BAR | TDF_CAN_BE_MINIMIZED | TDF_SIZE_TO_CONTENT;
+					taskDlgCfg.dwCommonButtons = TDCBF_OK_BUTTON | TDCBF_YES_BUTTON | TDCBF_NO_BUTTON | TDCBF_CANCEL_BUTTON | TDCBF_RETRY_BUTTON | TDCBF_CLOSE_BUTTON;
+					taskDlgCfg.pszWindowTitle = L"Dark Task Dialog";
+					taskDlgCfg.pszMainIcon = TD_ERROR_ICON;
+					taskDlgCfg.pszMainInstruction = L"Simple Dark Task Dialog";
+					taskDlgCfg.pszContent = L"Example of task dialog with basic dark mode support.\nMight/might not support every task dialog configuration.\nCurrently works only on Windows 11.";
+					taskDlgCfg.cButtons = static_cast<UINT>(commandBtn.size());
+					taskDlgCfg.pButtons = commandBtn.data();
+					taskDlgCfg.cRadioButtons = static_cast<UINT>(radioBtn.size());
+					taskDlgCfg.pRadioButtons = radioBtn.data();
+					taskDlgCfg.nDefaultButton = IDCLOSE;
+					taskDlgCfg.pszVerificationText = L"&Verification text";
+					taskDlgCfg.pszExpandedInformation = L"Expanded Information in footer.\nThis can also go in the top part of the dialog.";
+					taskDlgCfg.pszExpandedControlText = L"Expanded Control Text\non two lines";
+					taskDlgCfg.pszCollapsedControlText = L"Collapsed Control Text";
+					taskDlgCfg.pszFooterIcon = TD_INFORMATION_ICON;
+					taskDlgCfg.pszFooter = L"Footer with <a href=\"https://example.com\">hyperlink</a>";
+					taskDlgCfg.pfCallback = TaskDlgCallback;
+					taskDlgCfg.lpCallbackData = 0;
+					taskDlgCfg.cxWidth = 0;
+
+					BOOL checkFlag = FALSE;
+					DarkMode::darkTaskDialogIndirect(&taskDlgCfg, nullptr, nullptr, &checkFlag);
 					break;
 				}
 
@@ -1036,6 +1132,14 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, [[maybe_unused]] 
 		case WM_INITDIALOG:
 		{
 			DarkMode::setDarkWndNotifySafe(hDlg, true);
+			std::wstring dmlVer = L"Darkmodelib demo v";
+			dmlVer += std::to_wstring(DarkMode::getLibInfo(DarkMode::LibInfo::verMajor));
+			dmlVer += L'.';
+			dmlVer += std::to_wstring(DarkMode::getLibInfo(DarkMode::LibInfo::verMinor));
+			dmlVer += L'.';
+			dmlVer += std::to_wstring(DarkMode::getLibInfo(DarkMode::LibInfo::verRevision));
+
+			SetDlgItemTextW(hDlg, IDC_ABOUT_VERSION, dmlVer.c_str());
 			return TRUE;
 		}
 
@@ -1046,6 +1150,11 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, [[maybe_unused]] 
 				EndDialog(hDlg, LOWORD(wParam));
 				return TRUE;
 			}
+			break;
+		}
+
+		default:
+		{
 			break;
 		}
 	}

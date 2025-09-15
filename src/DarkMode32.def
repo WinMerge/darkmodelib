@@ -1,8 +1,10 @@
 LIBRARY darkmode
 EXPORTS
+	DarkMode_DarkTaskDlgCallback = ?DarkTaskDlgCallback@DarkMode@@YGJPAUHWND__@@IIJJ@Z
 	DarkMode_HookDlgProc = ?HookDlgProc@DarkMode@@YGIPAUHWND__@@IIJ@Z
 	DarkMode_calculatePerceivedLightness = ?calculatePerceivedLightness@DarkMode@@YANK@Z
 	DarkMode_calculateTreeViewStyle = ?calculateTreeViewStyle@DarkMode@@YAXXZ
+	DarkMode_darkTaskDialogIndirect = ?darkTaskDialogIndirect@DarkMode@@YAJPBU_TASKDIALOGCONFIG@@PAH11@Z
 	DarkMode_disableVisualStyle = ?disableVisualStyle@DarkMode@@YAXPAUHWND__@@_N@Z
 	DarkMode_enableDarkScrollBarForWindowAndChildren = ?enableDarkScrollBarForWindowAndChildren@DarkMode@@YAXPAUHWND__@@@Z
 	DarkMode_enableSysLinkCtrlCtlColor = ?enableSysLinkCtrlCtlColor@DarkMode@@YAXPAUHWND__@@@Z
@@ -110,6 +112,7 @@ EXPORTS
 	DarkMode_setDarkModeConfig0 = ?setDarkModeConfig@DarkMode@@YAXXZ
 	DarkMode_setDarkRichEdit = ?setDarkRichEdit@DarkMode@@YAXPAUHWND__@@@Z
 	DarkMode_setDarkScrollBar = ?setDarkScrollBar@DarkMode@@YAXPAUHWND__@@@Z
+	DarkMode_setDarkTaskDlg = ?setDarkTaskDlg@DarkMode@@YAXPAUHWND__@@@Z
 	DarkMode_setDarkThemeExperimental = ?setDarkThemeExperimental@DarkMode@@YAXPAUHWND__@@PB_W@Z
 	DarkMode_setDarkTitleBar = ?setDarkTitleBar@DarkMode@@YAXPAUHWND__@@@Z
 	DarkMode_setDarkTitleBarEx = ?setDarkTitleBarEx@DarkMode@@YAXPAUHWND__@@_N@Z
