@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\DarkMode.h">
+    <ClInclude Include="..\include\DarkModeSubclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\DarkModeSubclass.h">
+    <ClInclude Include="..\src\DarkMode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\IatHook.h">
@@ -33,10 +33,13 @@
     <ClInclude Include="..\src\Version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\MergeDarkMode.h">
+    <ClInclude Include="..\src\ModuleHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\DarkModeHook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\MergeDarkMode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -47,24 +50,21 @@
     <ClCompile Include="..\src\DarkModeSubclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\MergeDarkMode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\DarkModeHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\MergeDarkMode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\DarkMode64.def">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\src\DarkMode32.def">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\src\DarkMode.rc">
+    <ResourceCompile Include="..\src\dmlib.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\dmlib.def">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

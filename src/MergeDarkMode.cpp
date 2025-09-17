@@ -125,7 +125,7 @@ namespace WinMergeDarkMode
 	/**
 	 * @brief Invert bitmap image colors.
 	 */
-	DARKMODE_API void InvertLightness(CImage& image)
+	void InvertLightness(CImage& image)
 	{
 		const int width = image.GetWidth();
 		const int height = image.GetHeight();
@@ -235,7 +235,7 @@ namespace WinMergeDarkMode
 	/**
 	 * @brief Set sublass procedure for ascii art in About dialog.
 	 */
-	DARKMODE_API void SetAsciiArtSubclass(HWND hWnd)
+	void SetAsciiArtSubclass(HWND hWnd)
 	{
 		if (::GetWindowSubclass(hWnd, AsciiCtlColorSubclass, g_aboutAsciiSubclassID, nullptr) == FALSE)
 		{

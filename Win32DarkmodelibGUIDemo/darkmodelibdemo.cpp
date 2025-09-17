@@ -22,13 +22,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	[[maybe_unused]] _In_ LPWSTR /*lpCmdLine*/,
 	_In_ int nShowCmd)
 {
-#ifndef DARKMODE_DLL
+#if !defined(DMLIB_DLL)
 	SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
 #endif
 	SetDllDirectoryW(L"");
 
 	DarkMode::initDarkMode();
-	DarkMode::setDarkModeConfig(static_cast<UINT>(DarkMode::DarkModeType::dark));
+	DarkMode::setDarkModeConfigEx(static_cast<UINT>(DarkMode::DarkModeType::dark));
 	DarkMode::setDefaultColors(true);
 
 	// Initialize global strings
@@ -218,7 +218,7 @@ static void SelectAndRefreshMode(HWND hWnd, UINT checkID)
 		}
 	}
 
-	DarkMode::setDarkModeConfig(dmType);
+	DarkMode::setDarkModeConfigEx(dmType);
 	DarkMode::setDefaultColors(true);
 	DarkMode::setDarkTitleBarEx(hWnd, true);
 	DarkMode::setChildCtrlsTheme(hWnd);
@@ -860,7 +860,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			// --- Dark Mode ---
 			DarkMode::setColorizeTitleBarConfig(true);
-			DarkMode::setDarkWndNotifySafe(hWnd, true);
+			DarkMode::setDarkWndNotifySafe(hWnd);
 			DarkMode::setWindowEraseBgSubclass(hWnd);
 			DarkMode::setWindowMenuBarSubclass(hWnd);
 
@@ -1131,13 +1131,17 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, [[maybe_unused]] 
 	{
 		case WM_INITDIALOG:
 		{
-			DarkMode::setDarkWndNotifySafe(hDlg, true);
-			std::wstring dmlVer = L"Darkmodelib demo v";
-			dmlVer += std::to_wstring(DarkMode::getLibInfo(DarkMode::LibInfo::verMajor));
+			DarkMode::setDarkWndNotifySafe(hDlg);
+			std::wstring dmlVer = L"Darkmodelib demo ";
+#if defined(DMLIB_DLL)
+			dmlVer += L"DLL";
+#endif
+			dmlVer += L" v";
+			dmlVer += std::to_wstring(DarkMode::getLibInfo(static_cast<int>(DarkMode::LibInfo::verMajor)));
 			dmlVer += L'.';
-			dmlVer += std::to_wstring(DarkMode::getLibInfo(DarkMode::LibInfo::verMinor));
+			dmlVer += std::to_wstring(DarkMode::getLibInfo(static_cast<int>(DarkMode::LibInfo::verMinor)));
 			dmlVer += L'.';
-			dmlVer += std::to_wstring(DarkMode::getLibInfo(DarkMode::LibInfo::verRevision));
+			dmlVer += std::to_wstring(DarkMode::getLibInfo(static_cast<int>(DarkMode::LibInfo::verRevision)));
 
 			SetDlgItemTextW(hDlg, IDC_ABOUT_VERSION, dmlVer.c_str());
 			return TRUE;

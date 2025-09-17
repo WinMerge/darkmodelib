@@ -14,8 +14,6 @@
 
 #include "DarkModeSubclass.h"
 
-inline constexpr DWORD CC_FLAGS_DARK = CC_RGBINIT | CC_FULLOPEN | CC_ENABLEHOOK;
-
 namespace ATL
 {
 	class CImage; // from atlimage.h
@@ -26,16 +24,24 @@ namespace ATL
  */
 namespace WinMergeDarkMode
 {
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 	/**
 	 * @brief Invert bitmap image colors.
 	 * @param [in] image Image to invert colors.
 	 */
-	DARKMODE_API void InvertLightness(ATL::CImage& image);
+	DMLIB_API void InvertLightness(ATL::CImage& image);
 
 	/**
 	 * @brief Set sublass procedure for ascii art in About dialog.
 	 * @param [in] hWnd About dialog handle.
 	 */
-	DARKMODE_API void SetAsciiArtSubclass(HWND hWnd);
+	DMLIB_API void SetAsciiArtSubclass(HWND hWnd);
+
+#ifdef __cplusplus
+	} // extern "C"
+#endif
 }
 

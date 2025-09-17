@@ -28,17 +28,17 @@
 #pragma comment(lib, "Gdi32.lib")
 #endif
 
-#ifdef DARKMODE_DLL
-  #ifdef DARKMODE_EXPORTS
-    #define DARKMODE_API __declspec(dllexport)
-  #else
-    #define DARKMODE_API __declspec(dllimport)
-  #endif
+#if defined(DMLIB_DLL)
+	#if defined(DMLIB_EXPORTS)
+		#define DMLIB_API __declspec(dllexport)
+	#else
+		#define DMLIB_API __declspec(dllimport)
+	#endif
 #else
-  #define DARKMODE_API
+	#define DMLIB_API
 #endif
 
-typedef struct _TASKDIALOGCONFIG TASKDIALOGCONFIG;
+typedef struct _TASKDIALOGCONFIG TASKDIALOGCONFIG; // forward declaration, from <CommCtrl.h>
 
 /**
  * @namespace DarkMode
@@ -153,13 +153,13 @@ namespace DarkMode
 	/**
 	 * @brief Defines the available dark mode types for manual configurations.
 	 *
-	 * Can be used in DarkMode::initDarkModeConfig and in DarkMode::setDarkModeConfig
+	 * Can be used in `DarkMode::initDarkModeConfig` and in `DarkMode::setDarkModeConfigEx`
 	 * with static_cast<UINT>(DarkModeType::'value').
 	 *
 	 * @note Also used internally to distinguish between light, dark, and classic modes.
 	 *
 	 * @see DarkMode::initDarkModeConfig()
-	 * @see DarkMode::setDarkModeConfig()
+	 * @see DarkMode::setDarkModeConfigEx()
 	 */
 	enum class DarkModeType : unsigned char
 	{
@@ -167,6 +167,10 @@ namespace DarkMode
 		dark = 1,   ///< Dark mode appearance.
 		classic = 3 ///< Classic (non-themed or system) appearance.
 	};
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 	/**
 	 * @brief Returns library version information or compile-time feature flags.
@@ -176,7 +180,7 @@ namespace DarkMode
 	 *
 	 * @see LibInfo
 	 */
-	[[nodiscard]] DARKMODE_API int getLibInfo(LibInfo libInfoType);
+	[[nodiscard]] int getLibInfo(int libInfoType);
 
 	// ========================================================================
 	// Config
@@ -195,404 +199,416 @@ namespace DarkMode
 	 * @note Values 2 and 4 are reserved for internal use only.
 	 *       Using them can cause visual glitches.
 	 */
-	DARKMODE_API void initDarkModeConfig(UINT dmType);
+	DMLIB_API void initDarkModeConfig(UINT dmType);
 
 	/// Sets the preferred window corner style on Windows 11. (DWM_WINDOW_CORNER_PREFERENCE values)
-	DARKMODE_API void setRoundCornerConfig(UINT roundCornerStyle);
+	DMLIB_API void setRoundCornerConfig(UINT roundCornerStyle);
 
 	/// Sets the preferred border color for window edge on Windows 11.
-	DARKMODE_API void setBorderColorConfig(COLORREF clr);
+	DMLIB_API void setBorderColorConfig(COLORREF clr);
 
 	// Sets the Mica effects on Windows 11 setting. (DWM_SYSTEMBACKDROP_TYPE values)
-	DARKMODE_API void setMicaConfig(UINT mica);
+	DMLIB_API void setMicaConfig(UINT mica);
 
 	/// Sets Mica effects on the full window setting.
-	DARKMODE_API void setMicaExtendedConfig(bool extendMica);
+	DMLIB_API void setMicaExtendedConfig(bool extendMica);
 
 	/// Sets dialog colors on title bar on Windows 11 setting.
-	DARKMODE_API void setColorizeTitleBarConfig(bool colorize);
+	DMLIB_API void setColorizeTitleBarConfig(bool colorize);
 
 	/// Applies dark mode settings based on the given configuration type. (DarkModeType values)
-	DARKMODE_API void setDarkModeConfig(UINT dmType);
+	DMLIB_API void setDarkModeConfigEx(UINT dmType);
 
 	/// Applies dark mode settings based on system mode preference.
-	DARKMODE_API void setDarkModeConfig();
+	DMLIB_API void setDarkModeConfig();
 
 	/// Initializes dark mode experimental features, colors, and other settings.
-	DARKMODE_API void initDarkMode(const wchar_t* iniName);
+	DMLIB_API void initDarkModeEx(const wchar_t* iniName);
 
 	///Initializes dark mode without INI settings.
-	DARKMODE_API void initDarkMode();
+	DMLIB_API void initDarkMode();
 
 	// ========================================================================
 	// Basic checks
 	// ========================================================================
 
 	/// Checks if non-classic mode is enabled.
-	[[nodiscard]] DARKMODE_API bool isEnabled();
+	[[nodiscard]] DMLIB_API bool isEnabled();
 
 	/// Checks if experimental dark mode features are currently active.
-	[[nodiscard]] DARKMODE_API bool isExperimentalActive();
+	[[nodiscard]] DMLIB_API bool isExperimentalActive();
 
 	/// Checks if experimental dark mode features are supported by the system.
-	[[nodiscard]] DARKMODE_API bool isExperimentalSupported();
+	[[nodiscard]] DMLIB_API bool isExperimentalSupported();
 
 	/// Checks if follow the system mode behavior is enabled.
-	[[nodiscard]] DARKMODE_API bool isWindowsModeEnabled();
+	[[nodiscard]] DMLIB_API bool isWindowsModeEnabled();
 
 	/// Checks if the host OS is at least Windows 10.
-	[[nodiscard]] DARKMODE_API bool isAtLeastWindows10();
+	[[nodiscard]] DMLIB_API bool isAtLeastWindows10();
 
 	/// Checks if the host OS is at least Windows 11.
-	[[nodiscard]] DARKMODE_API bool isAtLeastWindows11();
+	[[nodiscard]] DMLIB_API bool isAtLeastWindows11();
 
 	/// Retrieves the current Windows build number.
-	[[nodiscard]] DARKMODE_API DWORD getWindowsBuildNumber();
+	[[nodiscard]] DMLIB_API DWORD getWindowsBuildNumber();
 
 	// ========================================================================
 	// System Events
 	// ========================================================================
 
 	/// Handles system setting changes related to dark mode.
-	DARKMODE_API bool handleSettingChange(LPARAM lParam);
+	DMLIB_API bool handleSettingChange(LPARAM lParam);
 
 	/// Checks if dark mode is enabled in the Windows registry.
-	[[nodiscard]] DARKMODE_API bool isDarkModeReg();
+	[[nodiscard]] DMLIB_API bool isDarkModeReg();
 
 	// ========================================================================
 	// From DarkMode.h
 	// ========================================================================
 
 	/**
-	 * @brief Overrides a specific system color with a custom color.
-	 *
-	 * Currently supports:
-	 * - `COLOR_WINDOW`: Background of ComboBoxEx list.
-	 * - `COLOR_WINDOWTEXT`: Text color of ComboBoxEx list.
-	 * - `COLOR_BTNFACE`: Gridline color in ListView (when applicable).
-	 *
-	 * @param nIndex One of the supported system color indices.
-	 * @param color Custom `COLORREF` value to apply.
-	 */
-	void DARKMODE_API setSysColor(int nIndex, COLORREF color);
+		* @brief Overrides a specific system color with a custom color.
+		*
+		* Currently supports:
+		* - `COLOR_WINDOW`: Background of ComboBoxEx list.
+		* - `COLOR_WINDOWTEXT`: Text color of ComboBoxEx list.
+		* - `COLOR_BTNFACE`: Gridline color in ListView (when applicable).
+		*
+		* @param nIndex One of the supported system color indices.
+		* @param color Custom `COLORREF` value to apply.
+		*/
+	DMLIB_API void setSysColor(int nIndex, COLORREF color);
 
 	// ========================================================================
 	// Enhancements to DarkMode.h
 	// ========================================================================
 
 	/// Makes scroll bars on the specified window and all its children consistent.
-	void DARKMODE_API enableDarkScrollBarForWindowAndChildren(HWND hWnd);
+	DMLIB_API void enableDarkScrollBarForWindowAndChildren(HWND hWnd);
 
 	// ========================================================================
 	// Colors
 	// ========================================================================
 
 	/// Sets the color tone and its color set for the active theme.
-	DARKMODE_API void setColorTone(ColorTone colorTone);
+	DMLIB_API void setColorTone(int colorTone);
 
 	/// Retrieves the currently active color tone for the theme.
-	[[nodiscard]] DARKMODE_API ColorTone getColorTone();
+	[[nodiscard]] DMLIB_API int getColorTone();
 
-	DARKMODE_API COLORREF setBackgroundColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setCtrlBackgroundColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setHotBackgroundColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setDlgBackgroundColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setErrorBackgroundColor(COLORREF clrNew);
+	DMLIB_API COLORREF setBackgroundColor(COLORREF clrNew);
+	DMLIB_API COLORREF setCtrlBackgroundColor(COLORREF clrNew);
+	DMLIB_API COLORREF setHotBackgroundColor(COLORREF clrNew);
+	DMLIB_API COLORREF setDlgBackgroundColor(COLORREF clrNew);
+	DMLIB_API COLORREF setErrorBackgroundColor(COLORREF clrNew);
 
-	DARKMODE_API COLORREF setTextColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setDarkerTextColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setDisabledTextColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setLinkTextColor(COLORREF clrNew);
+	DMLIB_API COLORREF setTextColor(COLORREF clrNew);
+	DMLIB_API COLORREF setDarkerTextColor(COLORREF clrNew);
+	DMLIB_API COLORREF setDisabledTextColor(COLORREF clrNew);
+	DMLIB_API COLORREF setLinkTextColor(COLORREF clrNew);
 
-	DARKMODE_API COLORREF setEdgeColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setHotEdgeColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setDisabledEdgeColor(COLORREF clrNew);
+	DMLIB_API COLORREF setEdgeColor(COLORREF clrNew);
+	DMLIB_API COLORREF setHotEdgeColor(COLORREF clrNew);
+	DMLIB_API COLORREF setDisabledEdgeColor(COLORREF clrNew);
 
-	DARKMODE_API void setThemeColors(Colors colors);
-	DARKMODE_API void updateThemeBrushesAndPens();
+	DMLIB_API void setThemeColors(Colors colors);
+	DMLIB_API void updateThemeBrushesAndPens();
 
-	[[nodiscard]] DARKMODE_API COLORREF getBackgroundColor();
-	[[nodiscard]] DARKMODE_API COLORREF getCtrlBackgroundColor();
-	[[nodiscard]] DARKMODE_API COLORREF getHotBackgroundColor();
-	[[nodiscard]] DARKMODE_API COLORREF getDlgBackgroundColor();
-	[[nodiscard]] DARKMODE_API COLORREF getErrorBackgroundColor();
+	[[nodiscard]] DMLIB_API COLORREF getBackgroundColor();
+	[[nodiscard]] DMLIB_API COLORREF getCtrlBackgroundColor();
+	[[nodiscard]] DMLIB_API COLORREF getHotBackgroundColor();
+	[[nodiscard]] DMLIB_API COLORREF getDlgBackgroundColor();
+	[[nodiscard]] DMLIB_API COLORREF getErrorBackgroundColor();
 
-	[[nodiscard]] DARKMODE_API COLORREF getTextColor();
-	[[nodiscard]] DARKMODE_API COLORREF getDarkerTextColor();
-	[[nodiscard]] DARKMODE_API COLORREF getDisabledTextColor();
-	[[nodiscard]] DARKMODE_API COLORREF getLinkTextColor();
+	[[nodiscard]] DMLIB_API COLORREF getTextColor();
+	[[nodiscard]] DMLIB_API COLORREF getDarkerTextColor();
+	[[nodiscard]] DMLIB_API COLORREF getDisabledTextColor();
+	[[nodiscard]] DMLIB_API COLORREF getLinkTextColor();
 
-	[[nodiscard]] DARKMODE_API COLORREF getEdgeColor();
-	[[nodiscard]] DARKMODE_API COLORREF getHotEdgeColor();
-	[[nodiscard]] DARKMODE_API COLORREF getDisabledEdgeColor();
+	[[nodiscard]] DMLIB_API COLORREF getEdgeColor();
+	[[nodiscard]] DMLIB_API COLORREF getHotEdgeColor();
+	[[nodiscard]] DMLIB_API COLORREF getDisabledEdgeColor();
 
-	[[nodiscard]] DARKMODE_API HBRUSH getBackgroundBrush();
-	[[nodiscard]] DARKMODE_API HBRUSH getDlgBackgroundBrush();
-	[[nodiscard]] DARKMODE_API HBRUSH getCtrlBackgroundBrush();
-	[[nodiscard]] DARKMODE_API HBRUSH getHotBackgroundBrush();
-	[[nodiscard]] DARKMODE_API HBRUSH getErrorBackgroundBrush();
+	[[nodiscard]] DMLIB_API HBRUSH getBackgroundBrush();
+	[[nodiscard]] DMLIB_API HBRUSH getDlgBackgroundBrush();
+	[[nodiscard]] DMLIB_API HBRUSH getCtrlBackgroundBrush();
+	[[nodiscard]] DMLIB_API HBRUSH getHotBackgroundBrush();
+	[[nodiscard]] DMLIB_API HBRUSH getErrorBackgroundBrush();
 
-	[[nodiscard]] DARKMODE_API HBRUSH getEdgeBrush();
-	[[nodiscard]] DARKMODE_API HBRUSH getHotEdgeBrush();
-	[[nodiscard]] DARKMODE_API HBRUSH getDisabledEdgeBrush();
+	[[nodiscard]] DMLIB_API HBRUSH getEdgeBrush();
+	[[nodiscard]] DMLIB_API HBRUSH getHotEdgeBrush();
+	[[nodiscard]] DMLIB_API HBRUSH getDisabledEdgeBrush();
 
-	[[nodiscard]] DARKMODE_API HPEN getDarkerTextPen();
-	[[nodiscard]] DARKMODE_API HPEN getEdgePen();
-	[[nodiscard]] DARKMODE_API HPEN getHotEdgePen();
-	[[nodiscard]] DARKMODE_API HPEN getDisabledEdgePen();
+	[[nodiscard]] DMLIB_API HPEN getDarkerTextPen();
+	[[nodiscard]] DMLIB_API HPEN getEdgePen();
+	[[nodiscard]] DMLIB_API HPEN getHotEdgePen();
+	[[nodiscard]] DMLIB_API HPEN getDisabledEdgePen();
 
-	DARKMODE_API COLORREF setViewBackgroundColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setViewTextColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setViewGridlinesColor(COLORREF clrNew);
+	DMLIB_API COLORREF setViewBackgroundColor(COLORREF clrNew);
+	DMLIB_API COLORREF setViewTextColor(COLORREF clrNew);
+	DMLIB_API COLORREF setViewGridlinesColor(COLORREF clrNew);
 
-	DARKMODE_API COLORREF setHeaderBackgroundColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setHeaderHotBackgroundColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setHeaderTextColor(COLORREF clrNew);
-	DARKMODE_API COLORREF setHeaderEdgeColor(COLORREF clrNew);
+	DMLIB_API COLORREF setHeaderBackgroundColor(COLORREF clrNew);
+	DMLIB_API COLORREF setHeaderHotBackgroundColor(COLORREF clrNew);
+	DMLIB_API COLORREF setHeaderTextColor(COLORREF clrNew);
+	DMLIB_API COLORREF setHeaderEdgeColor(COLORREF clrNew);
 
-	DARKMODE_API void setViewColors(ColorsView colors);
-	DARKMODE_API void updateViewBrushesAndPens();
+	DMLIB_API void setViewColors(ColorsView colors);
+	DMLIB_API void updateViewBrushesAndPens();
 
-	[[nodiscard]] DARKMODE_API COLORREF getViewBackgroundColor();
-	[[nodiscard]] DARKMODE_API COLORREF getViewTextColor();
-	[[nodiscard]] DARKMODE_API COLORREF getViewGridlinesColor();
+	[[nodiscard]] DMLIB_API COLORREF getViewBackgroundColor();
+	[[nodiscard]] DMLIB_API COLORREF getViewTextColor();
+	[[nodiscard]] DMLIB_API COLORREF getViewGridlinesColor();
 
-	[[nodiscard]] DARKMODE_API COLORREF getHeaderBackgroundColor();
-	[[nodiscard]] DARKMODE_API COLORREF getHeaderHotBackgroundColor();
-	[[nodiscard]] DARKMODE_API COLORREF getHeaderTextColor();
-	[[nodiscard]] DARKMODE_API COLORREF getHeaderEdgeColor();
+	[[nodiscard]] DMLIB_API COLORREF getHeaderBackgroundColor();
+	[[nodiscard]] DMLIB_API COLORREF getHeaderHotBackgroundColor();
+	[[nodiscard]] DMLIB_API COLORREF getHeaderTextColor();
+	[[nodiscard]] DMLIB_API COLORREF getHeaderEdgeColor();
 
-	[[nodiscard]] DARKMODE_API HBRUSH getViewBackgroundBrush();
-	[[nodiscard]] DARKMODE_API HBRUSH getViewGridlinesBrush();
+	[[nodiscard]] DMLIB_API HBRUSH getViewBackgroundBrush();
+	[[nodiscard]] DMLIB_API HBRUSH getViewGridlinesBrush();
 
-	[[nodiscard]] DARKMODE_API HBRUSH getHeaderBackgroundBrush();
-	[[nodiscard]] DARKMODE_API HBRUSH getHeaderHotBackgroundBrush();
+	[[nodiscard]] DMLIB_API HBRUSH getHeaderBackgroundBrush();
+	[[nodiscard]] DMLIB_API HBRUSH getHeaderHotBackgroundBrush();
 
-	[[nodiscard]] DARKMODE_API HPEN getHeaderEdgePen();
+	[[nodiscard]] DMLIB_API HPEN getHeaderEdgePen();
 
 	/// Initializes default color set based on the current mode type.
-	DARKMODE_API void setDefaultColors(bool updateBrushesAndOther);
+	DMLIB_API void setDefaultColors(bool updateBrushesAndOther);
 
 	// ========================================================================
 	// Paint Helpers
 	// ========================================================================
 
 	/// Paints a rounded rectangle using the specified pen and brush.
-	DARKMODE_API void paintRoundRect(HDC hdc, const RECT& rect, HPEN hpen, HBRUSH hBrush, int width = 0, int height = 0);
+	DMLIB_API void paintRoundRect(HDC hdc, const RECT& rect, HPEN hpen, HBRUSH hBrush, int width, int height);
+	/// Paints a rectangle using the specified pen and brush.
+	DMLIB_API void paintRect(HDC hdc, const RECT& rect, HPEN hpen, HBRUSH hBrush);
 	/// Paints an unfilled rounded rectangle (frame only).
-	DARKMODE_API void paintRoundFrameRect(HDC hdc, const RECT& rect, HPEN hpen, int width = 0, int height = 0);
+	DMLIB_API void paintRoundFrameRect(HDC hdc, const RECT& rect, HPEN hpen, int width, int height);
+	/// Paints an unfilled rounded rectangle (frame only).
+	DMLIB_API void paintFrameRect(HDC hdc, const RECT& rect, HPEN hpen);
 
 	// ========================================================================
 	// Control Subclassing
 	// ========================================================================
 
 	/// Applies themed owner drawn subclassing to a checkbox, radio, or tri-state button control.
-	DARKMODE_API void setCheckboxOrRadioBtnCtrlSubclass(HWND hWnd);
+	DMLIB_API void setCheckboxOrRadioBtnCtrlSubclass(HWND hWnd);
 	/// Removes the owner drawn subclass from a a checkbox, radio, or tri-state button control.
-	DARKMODE_API void removeCheckboxOrRadioBtnCtrlSubclass(HWND hWnd);
+	DMLIB_API void removeCheckboxOrRadioBtnCtrlSubclass(HWND hWnd);
 
 	/// Applies owner drawn subclassing to a groupbox button control.
-	DARKMODE_API void setGroupboxCtrlSubclass(HWND hWnd);
+	DMLIB_API void setGroupboxCtrlSubclass(HWND hWnd);
 	/// Removes the owner drawn subclass from a groupbox button control.
-	DARKMODE_API void removeGroupboxCtrlSubclass(HWND hWnd);
+	DMLIB_API void removeGroupboxCtrlSubclass(HWND hWnd);
 
 	/// Applies owner drawn subclassing and theming to an up-down (spinner) control.
-	DARKMODE_API void setUpDownCtrlSubclass(HWND hWnd);
+	DMLIB_API void setUpDownCtrlSubclass(HWND hWnd);
 	/// Removes the owner drawn subclass from a up-down (spinner) control.
-	DARKMODE_API void removeUpDownCtrlSubclass(HWND hWnd);
+	DMLIB_API void removeUpDownCtrlSubclass(HWND hWnd);
 
 	/// Applies a subclass to detect and subclass tab control's up-down (spinner) child.
-	DARKMODE_API void setTabCtrlUpDownSubclass(HWND hWnd);
+	DMLIB_API void setTabCtrlUpDownSubclass(HWND hWnd);
 	/// Removes the subclass procedure for a tab control's up-down (spinner) child detection.
-	DARKMODE_API void removeTabCtrlUpDownSubclass(HWND hWnd);
+	DMLIB_API void removeTabCtrlUpDownSubclass(HWND hWnd);
 	/// Applies owner drawn and up-down (spinner) child detection subclassings for a tab control.
-	DARKMODE_API void setTabCtrlSubclass(HWND hWnd);
+	DMLIB_API void setTabCtrlSubclass(HWND hWnd);
 	/// Removes owner drawn and up-down (spinner) child detection subclasses.
-	DARKMODE_API void removeTabCtrlSubclass(HWND hWnd);
+	DMLIB_API void removeTabCtrlSubclass(HWND hWnd);
 
 	/// Applies owner drawn custom border subclassing to a list box or edit control.
-	DARKMODE_API void setCustomBorderForListBoxOrEditCtrlSubclass(HWND hWnd);
+	DMLIB_API void setCustomBorderForListBoxOrEditCtrlSubclass(HWND hWnd);
 	/// Removes the custom border subclass from a list box or edit control.
-	DARKMODE_API void removeCustomBorderForListBoxOrEditCtrlSubclass(HWND hWnd);
+	DMLIB_API void removeCustomBorderForListBoxOrEditCtrlSubclass(HWND hWnd);
 
 	/// Applies owner drawn subclassing to a combo box control.
-	DARKMODE_API void setComboBoxCtrlSubclass(HWND hWnd);
+	DMLIB_API void setComboBoxCtrlSubclass(HWND hWnd);
 	/// Removes the owner drawn subclass from a combo box control.
-	DARKMODE_API void removeComboBoxCtrlSubclass(HWND hWnd);
+	DMLIB_API void removeComboBoxCtrlSubclass(HWND hWnd);
 
 	/// Applies subclassing to a ComboBoxEx control to handle its child list box and edit controls.
-	DARKMODE_API void setComboBoxExCtrlSubclass(HWND hWnd);
-	///  Removes the child handling subclass from a ComboBoxEx control.
-	DARKMODE_API void removeComboBoxExCtrlSubclass(HWND hWnd);
+	DMLIB_API void setComboBoxExCtrlSubclass(HWND hWnd);
+	/// Removes the child handling subclass from a ComboBoxEx control.
+	DMLIB_API void removeComboBoxExCtrlSubclass(HWND hWnd);
 
 	/// Applies subclassing to a list view control to handle custom colors.
-	DARKMODE_API void setListViewCtrlSubclass(HWND hWnd);
+	DMLIB_API void setListViewCtrlSubclass(HWND hWnd);
 	/// Removes the custom colors handling subclass from a list view control.
-	DARKMODE_API void removeListViewCtrlSubclass(HWND hWnd);
+	DMLIB_API void removeListViewCtrlSubclass(HWND hWnd);
 
 	/// Applies owner drawn subclassing to a header control.
-	DARKMODE_API void setHeaderCtrlSubclass(HWND hWnd);
+	DMLIB_API void setHeaderCtrlSubclass(HWND hWnd);
 	/// Removes the owner drawn subclass from a header control.
-	DARKMODE_API void removeHeaderCtrlSubclass(HWND hWnd);
+	DMLIB_API void removeHeaderCtrlSubclass(HWND hWnd);
 
 	/// Applies owner drawn subclassing to a status bar control.
-	DARKMODE_API void setStatusBarCtrlSubclass(HWND hWnd);
+	DMLIB_API void setStatusBarCtrlSubclass(HWND hWnd);
 	/// Removes the owner drawn subclass from a status bar control.
-	DARKMODE_API void removeStatusBarCtrlSubclass(HWND hWnd);
+	DMLIB_API void removeStatusBarCtrlSubclass(HWND hWnd);
 
 	/// Applies owner drawn subclassing to a progress bar control.
-	DARKMODE_API void setProgressBarCtrlSubclass(HWND hWnd);
+	DMLIB_API void setProgressBarCtrlSubclass(HWND hWnd);
 	/// Removes the owner drawn subclass from a progress bar control.
-	DARKMODE_API void removeProgressBarCtrlSubclass(HWND hWnd);
+	DMLIB_API void removeProgressBarCtrlSubclass(HWND hWnd);
 
 	/// Applies workaround subclassing to a static control to handle visual glitch in disabled state.
-	DARKMODE_API void setStaticTextCtrlSubclass(HWND hWnd);
+	DMLIB_API void setStaticTextCtrlSubclass(HWND hWnd);
 	/// Removes the workaround subclass from a static control.
-	DARKMODE_API void removeStaticTextCtrlSubclass(HWND hWnd);
+	DMLIB_API void removeStaticTextCtrlSubclass(HWND hWnd);
 
 	// ========================================================================
 	// Child Subclassing
 	// ========================================================================
 
 	/// Applies theming and/or subclassing to all child controls of a parent window.
-	DARKMODE_API void setChildCtrlsSubclassAndTheme(HWND hParent, bool subclass = true, bool theme = true);
+	DMLIB_API void setChildCtrlsSubclassAndThemeEx(HWND hParent, bool subclass, bool theme);
+	/// Wrapper for `DarkMode::setChildCtrlsSubclassAndThemeEx`.
+	DMLIB_API void setChildCtrlsSubclassAndTheme(HWND hParent);
 	/// Applies theming to all child controls of a parent window.
-	DARKMODE_API void setChildCtrlsTheme(HWND hParent);
+	DMLIB_API void setChildCtrlsTheme(HWND hParent);
 
 	// ========================================================================
 	// Window, Parent, And Other Subclassing
 	// ========================================================================
 
 	/// Applies window subclassing to handle `WM_ERASEBKGND` message.
-	DARKMODE_API void setWindowEraseBgSubclass(HWND hWnd);
+	DMLIB_API void setWindowEraseBgSubclass(HWND hWnd);
 	/// Removes the subclass used for `WM_ERASEBKGND` message handling.
-	DARKMODE_API void removeWindowEraseBgSubclass(HWND hWnd);
+	DMLIB_API void removeWindowEraseBgSubclass(HWND hWnd);
 
 	/// Applies window subclassing to handle `WM_CTLCOLOR*` messages.
-	DARKMODE_API void setWindowCtlColorSubclass(HWND hWnd);
+	DMLIB_API void setWindowCtlColorSubclass(HWND hWnd);
 	/// Removes the subclass used for `WM_CTLCOLOR*` messages handling.
-	DARKMODE_API void removeWindowCtlColorSubclass(HWND hWnd);
+	DMLIB_API void removeWindowCtlColorSubclass(HWND hWnd);
 
 	/// Applies window subclassing for handling `NM_CUSTOMDRAW` notifications for custom drawing.
-	DARKMODE_API void setWindowNotifyCustomDrawSubclass(HWND hWnd);
+	DMLIB_API void setWindowNotifyCustomDrawSubclass(HWND hWnd);
 	/// Removes the subclass used for handling `NM_CUSTOMDRAW` notifications for custom drawing.
-	DARKMODE_API void removeWindowNotifyCustomDrawSubclass(HWND hWnd);
+	DMLIB_API void removeWindowNotifyCustomDrawSubclass(HWND hWnd);
 
 	/// Applies window subclassing for menu bar themed custom drawing.
-	DARKMODE_API void setWindowMenuBarSubclass(HWND hWnd);
+	DMLIB_API void setWindowMenuBarSubclass(HWND hWnd);
 	/// Removes the subclass used for menu bar themed custom drawing.
-	DARKMODE_API void removeWindowMenuBarSubclass(HWND hWnd);
+	DMLIB_API void removeWindowMenuBarSubclass(HWND hWnd);
 
 	/// Applies window subclassing to handle `WM_SETTINGCHANGE` message.
-	DARKMODE_API void setWindowSettingChangeSubclass(HWND hWnd);
+	DMLIB_API void setWindowSettingChangeSubclass(HWND hWnd);
 	/// Removes the subclass used for `WM_SETTINGCHANGE` message handling.
-	DARKMODE_API void removeWindowSettingChangeSubclass(HWND hWnd);
+	DMLIB_API void removeWindowSettingChangeSubclass(HWND hWnd);
 
 	// ========================================================================
 	// Theme And Helpers
 	// ========================================================================
 
 	/// Configures the SysLink control to be affected by `WM_CTLCOLORSTATIC` message.
-	DARKMODE_API void enableSysLinkCtrlCtlColor(HWND hWnd);
+	DMLIB_API void enableSysLinkCtrlCtlColor(HWND hWnd);
 
 	/// Sets dark title bar and optional Windows 11 features.
-	DARKMODE_API void setDarkTitleBarEx(HWND hWnd, bool useWin11Features);
+	DMLIB_API void setDarkTitleBarEx(HWND hWnd, bool useWin11Features);
 	/// Sets dark mode title bar on supported Windows versions.
-	DARKMODE_API void setDarkTitleBar(HWND hWnd);
+	DMLIB_API void setDarkTitleBar(HWND hWnd);
 
 	/// Applies an experimental visual style to the specified window, if supported.
-	DARKMODE_API void setDarkThemeExperimental(HWND hWnd, const wchar_t* themeClassName = L"Explorer");
+	DMLIB_API void setDarkThemeExperimentalEx(HWND hWnd, const wchar_t* themeClassName);
+	/// Applies an experimental Explorer visual style to the specified window, if supported.
+	DMLIB_API void setDarkThemeExperimental(HWND hWnd);
 	/// Applies "DarkMode_Explorer" visual style if experimental mode is active.
-	DARKMODE_API void setDarkExplorerTheme(HWND hWnd);
+	DMLIB_API void setDarkExplorerTheme(HWND hWnd);
 	/// Applies "DarkMode_Explorer" visual style to scroll bars.
-	DARKMODE_API void setDarkScrollBar(HWND hWnd);
+	DMLIB_API void setDarkScrollBar(HWND hWnd);
 	/// Applies "DarkMode_Explorer" visual style to tooltip controls based on context.
-	DARKMODE_API void setDarkTooltips(HWND hWnd, ToolTipsType type = ToolTipsType::tooltip);
+	DMLIB_API void setDarkTooltips(HWND hWnd, int tooltipType);
 
 	/// Sets the color of line above a toolbar control for non-classic mode.
-	DARKMODE_API void setDarkLineAbovePanelToolbar(HWND hWnd);
+	DMLIB_API void setDarkLineAbovePanelToolbar(HWND hWnd);
 	/// Applies an experimental Explorer visual style to a list view.
-	DARKMODE_API void setDarkListView(HWND hWnd);
+	DMLIB_API void setDarkListView(HWND hWnd);
 	/// Replaces default list view checkboxes with themed dark-mode versions on Windows 11.
-	DARKMODE_API void setDarkListViewCheckboxes(HWND hWnd);
+	DMLIB_API void setDarkListViewCheckboxes(HWND hWnd);
 	/// Sets colors and edges for a RichEdit control.
-	DARKMODE_API void setDarkRichEdit(HWND hWnd);
+	DMLIB_API void setDarkRichEdit(HWND hWnd);
 
 	/// Applies visual styles; ctl color message and child controls subclassings to a window safely.
-	DARKMODE_API void setDarkWndSafe(HWND hWnd, bool useWin11Features = true);
+	DMLIB_API void setDarkWndSafeEx(HWND hWnd, bool useWin11Features);
+	/// Applies visual styles; ctl color message and child controls subclassings with Windows 11 features.
+	DMLIB_API void setDarkWndSafe(HWND hWnd);
 	/// Applies visual styles; ctl color message, child controls, custom drawing, and setting change subclassings to a window safely.
-	DARKMODE_API void setDarkWndNotifySafeEx(HWND hWnd, bool setSettingChangeSubclass, bool useWin11Features);
-	/// Applies visual styles; ctl color message, child controls, and custom drawing subclassings to a window safely.
-	DARKMODE_API void setDarkWndNotifySafe(HWND hWnd, bool useWin11Features = true);
+	DMLIB_API void setDarkWndNotifySafeEx(HWND hWnd, bool setSettingChangeSubclass, bool useWin11Features);
+	/// Applies visual styles; ctl color message, child controls, and custom drawing subclassings with Windows 11 features.
+	DMLIB_API void setDarkWndNotifySafe(HWND hWnd);
 
 	/// Enables or disables theme-based dialog background textures in classic mode.
-	DARKMODE_API void enableThemeDialogTexture(HWND hWnd, bool theme);
+	DMLIB_API void enableThemeDialogTexture(HWND hWnd, bool theme);
 
 	/// Enables or disables visual styles for a window.
-	DARKMODE_API void disableVisualStyle(HWND hWnd, bool doDisable);
+	DMLIB_API void disableVisualStyle(HWND hWnd, bool doDisable);
 
 	/// Calculates perceptual lightness of a COLORREF color.
-	[[nodiscard]] DARKMODE_API double calculatePerceivedLightness(COLORREF clr);
+	[[nodiscard]] DMLIB_API double calculatePerceivedLightness(COLORREF clr);
 
 	/// Retrieves the current TreeView style configuration.
-	[[nodiscard]] DARKMODE_API const TreeViewStyle& getTreeViewStyle();
+	[[nodiscard]] DMLIB_API int getTreeViewStyle();
 
 	/// Determines appropriate TreeView style based on background perceived lightness.
-	DARKMODE_API void calculateTreeViewStyle();
+	DMLIB_API void calculateTreeViewStyle();
 
+	/// (Re)applies the appropriate window theme style to the specified TreeView.
+	DMLIB_API void setTreeViewWindowThemeEx(HWND hWnd, bool force);
 	/// Applies the appropriate window theme style to the specified TreeView.
-	DARKMODE_API void setTreeViewWindowTheme(HWND hWnd, bool force = false);
+	DMLIB_API void setTreeViewWindowTheme(HWND hWnd);
 
 	/// Retrieves the previous TreeView style configuration.
-	[[nodiscard]] DARKMODE_API const TreeViewStyle& getPrevTreeViewStyle();
+	[[nodiscard]] DMLIB_API int getPrevTreeViewStyle();
 
 	/// Stores the current TreeView style as the previous style for later comparison.
-	DARKMODE_API void setPrevTreeViewStyle();
+	DMLIB_API void setPrevTreeViewStyle();
 
 	/// Checks whether the current theme is dark.
-	[[nodiscard]] DARKMODE_API bool isThemeDark();
+	[[nodiscard]] DMLIB_API bool isThemeDark();
 
 	/// Checks whether the color is dark.
-	[[nodiscard]] DARKMODE_API bool isColorDark(COLORREF clr);
+	[[nodiscard]] DMLIB_API bool isColorDark(COLORREF clr);
 
 	/// Forces a window to redraw its non-client frame.
-	DARKMODE_API void redrawWindowFrame(HWND hWnd);
+	DMLIB_API void redrawWindowFrame(HWND hWnd);
 	/// Sets a window's standard style flags and redraws window if needed.
-	DARKMODE_API void setWindowStyle(HWND hWnd, bool setStyle, LONG_PTR styleFlag);
+	DMLIB_API void setWindowStyle(HWND hWnd, bool setStyle, LONG_PTR styleFlag);
 	/// Sets a window's extended style flags and redraws window if needed.
-	DARKMODE_API void setWindowExStyle(HWND hWnd, bool setExStyle, LONG_PTR exStyleFlag);
+	DMLIB_API void setWindowExStyle(HWND hWnd, bool setExStyle, LONG_PTR exStyleFlag);
 	/// Replaces an extended edge (e.g. client edge) with a standard window border.
-	DARKMODE_API void replaceExEdgeWithBorder(HWND hWnd, bool replace, LONG_PTR exStyleFlag);
+	DMLIB_API void replaceExEdgeWithBorder(HWND hWnd, bool replace, LONG_PTR exStyleFlag);
 	/// Safely toggles `WS_EX_CLIENTEDGE` with `WS_BORDER` based on dark mode state.
-	DARKMODE_API void replaceClientEdgeWithBorderSafe(HWND hWnd);
+	DMLIB_API void replaceClientEdgeWithBorderSafe(HWND hWnd);
 
 	/// Applies classic-themed styling to a progress bar in non-classic mode.
-	DARKMODE_API void setProgressBarClassicTheme(HWND hWnd);
+	DMLIB_API void setProgressBarClassicTheme(HWND hWnd);
 
 	// ========================================================================
 	// Ctl Color
 	// ========================================================================
 
 	/// Handles text and background colorizing for read-only controls.
-	[[nodiscard]] DARKMODE_API LRESULT onCtlColor(HDC hdc);
+	[[nodiscard]] DMLIB_API LRESULT onCtlColor(HDC hdc);
 
 	/// Handles text and background colorizing for interactive controls.
-	[[nodiscard]] DARKMODE_API LRESULT onCtlColorCtrl(HDC hdc);
+	[[nodiscard]] DMLIB_API LRESULT onCtlColorCtrl(HDC hdc);
 
 	/// Handles text and background colorizing for window and disabled non-text controls.
-	[[nodiscard]] DARKMODE_API LRESULT onCtlColorDlg(HDC hdc);
+	[[nodiscard]] DMLIB_API LRESULT onCtlColorDlg(HDC hdc);
 
 	/// Handles text and background colorizing for error state (for specific usage).
-	[[nodiscard]] DARKMODE_API LRESULT onCtlColorError(HDC hdc);
+	[[nodiscard]] DMLIB_API LRESULT onCtlColorError(HDC hdc);
 
 	/// Handles text and background colorizing for static text controls.
-	[[nodiscard]] DARKMODE_API LRESULT onCtlColorDlgStaticText(HDC hdc, bool isTextEnabled);
+	[[nodiscard]] DMLIB_API LRESULT onCtlColorDlgStaticText(HDC hdc, bool isTextEnabled);
 
 	/// Handles text and background colorizing for SysLink controls.
-	[[nodiscard]] DARKMODE_API LRESULT onCtlColorDlgLinkText(HDC hdc, bool isTextEnabled = true);
+	[[nodiscard]] DMLIB_API LRESULT onCtlColorDlgLinkText(HDC hdc, bool isTextEnabled);
 
 	/// Handles text and background colorizing for list box controls.
-	[[nodiscard]] DARKMODE_API LRESULT onCtlColorListbox(WPARAM wParam, LPARAM lParam);
+	[[nodiscard]] DMLIB_API LRESULT onCtlColorListbox(WPARAM wParam, LPARAM lParam);
 
 	// ========================================================================
 	// Hook Callback Dialog Procedure
@@ -686,13 +702,13 @@ namespace DarkMode
 	 * @param lParam    Second message parameter (unused).
 	 * @return A value defined by the hook procedure.
 	 */
-	DARKMODE_API UINT_PTR CALLBACK HookDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	DMLIB_API UINT_PTR CALLBACK HookDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	/// Applies dark mode visual styles to task dialog.
-	DARKMODE_API void setDarkTaskDlg(HWND hWnd);
+	DMLIB_API void setDarkTaskDlg(HWND hWnd);
 
 	/// Simple task dialog callback procedure to enable dark mode support.
-	DARKMODE_API HRESULT CALLBACK DarkTaskDlgCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, LONG_PTR lpRefData);
+	DMLIB_API HRESULT CALLBACK DarkTaskDlgCallback(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LONG_PTR lpRefData);
 
 	/**
 	 * @brief Wrapper for `TaskDialogIndirect` with dark mode support.
@@ -705,13 +721,13 @@ namespace DarkMode
 	 * ```cpp
 	 * static HRESULT CALLBACK DarkTaskDlgCallback(
 	 *     HWND hWnd,
-	 *     UINT msg,
+	 *     UINT uMsg,
 	 *     [[maybe_unused]] WPARAM wParam,
 	 *     [[maybe_unused]] LPARAM lParam,
 	 *     [[maybe_unused]] LONG_PTR lpRefData
 	 * )
 	 * {
-	 *     if (msg == TDN_DIALOG_CONSTRUCTED)
+	 *     if (uMsg == TDN_DIALOG_CONSTRUCTED)
 	 *     {
 	 *          DarkMode::setDarkTaskDlg(hWnd);
 	 *     }
@@ -722,7 +738,11 @@ namespace DarkMode
 	 * @see DarkMode::DarkTaskDlgCallback()
 	 * @see DarkMode::setDarkTaskDlg()
 	 */
-	DARKMODE_API HRESULT darkTaskDialogIndirect(const TASKDIALOGCONFIG* pTaskConfig, int* pnButton, int* pnRadioButton, BOOL* pfVerificationFlagChecked);
+	DMLIB_API HRESULT darkTaskDialogIndirect(const TASKDIALOGCONFIG* pTaskConfig, int* pnButton, int* pnRadioButton, BOOL* pfVerificationFlagChecked);
+
+#ifdef __cplusplus
+	} // extern "C"
+#endif
 
 } // namespace DarkMode
 
