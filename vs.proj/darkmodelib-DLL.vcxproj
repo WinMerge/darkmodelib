@@ -51,32 +51,32 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)Build\$(PlatformTarget)\$(Configuration)\darkmodelib\</OutDir>
-    <IntDir>..\build\obj-dll\$(Platform)-$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)BuildTmp\$(ProjectName)\$(PlatformTarget)\$(Configuration)\</IntDir>
     <TargetName>darkmode</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)Build\$(PlatformTarget)\$(Configuration)\darkmodelib\</OutDir>
-    <IntDir>..\build\obj-dll\$(Platform)-$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)BuildTmp\$(ProjectName)\$(PlatformTarget)\$(Configuration)\</IntDir>
     <TargetName>darkmode</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)Build\$(PlatformTarget)\$(Configuration)\darkmodelib\</OutDir>
-    <IntDir>..\build\obj-dll\$(Platform)-$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)BuildTmp\$(ProjectName)\$(PlatformTarget)\$(Configuration)\</IntDir>
     <TargetName>darkmode</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Build\$(PlatformTarget)\$(Configuration)\darkmodelib\</OutDir>
-    <IntDir>..\build\obj-dll\$(Platform)-$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)BuildTmp\$(ProjectName)\$(PlatformTarget)\$(Configuration)\</IntDir>
     <TargetName>darkmode</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <OutDir>$(SolutionDir)Build\$(PlatformTarget)\$(Configuration)\darkmodelib\</OutDir>
-    <IntDir>..\build\obj-dll\$(Platform)-$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)BuildTmp\$(ProjectName)\$(PlatformTarget)\$(Configuration)\</IntDir>
     <TargetName>darkmode</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <OutDir>$(SolutionDir)Build\$(PlatformTarget)\$(Configuration)\darkmodelib\</OutDir>
-    <IntDir>..\build\obj-dll\$(Platform)-$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)BuildTmp\$(ProjectName)\$(PlatformTarget)\$(Configuration)\</IntDir>
     <TargetName>darkmode</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
