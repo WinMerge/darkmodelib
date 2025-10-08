@@ -28,7 +28,7 @@ goto :eof
 :GET_DLL_VERSION
 
 SET EXE_PATH=%1
-WMIC Path CIM_DataFile WHERE Name='%EXE_PATH:\=\\%' Get Version | findstr /v Version > _tmp_.txt
+powershell -NoLogo -NoProfile -Command "(Get-Item '%EXE_PATH%').VersionInfo.FileVersion" > _tmp_.txt
 set /P DLL_VERSIONTMP=<_tmp_.txt
 set DLL_VERSION=%DLL_VERSIONTMP: =%
 del _tmp_.txt
