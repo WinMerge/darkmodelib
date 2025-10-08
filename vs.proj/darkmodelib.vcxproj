@@ -77,18 +77,33 @@
   </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DarkModeSubclass.h" />
-    <ClInclude Include="..\src\DarkMode.h" />
+    <ClInclude Include="..\src\DmlibColor.h" />
+    <ClInclude Include="..\src\DmlibDpi.h" />
+    <ClInclude Include="..\src\DmlibGlyph.h" />
+    <ClInclude Include="..\src\DmlibHook.h" />
+    <ClInclude Include="..\src\DmlibIni.h" />
+    <ClInclude Include="..\src\DmlibPaintHelper.h" />
+    <ClInclude Include="..\src\DmlibSubclass.h" />
+    <ClInclude Include="..\src\DmlibSubclassControl.h" />
+    <ClInclude Include="..\src\DmlibSubclassWindow.h" />
+    <ClInclude Include="..\src\DmlibWinApi.h" />
     <ClInclude Include="..\src\IatHook.h" />
-    <ClInclude Include="..\src\DarkModeHook.h" />
     <ClInclude Include="..\src\ModuleHelper.h" />
     <ClInclude Include="..\src\StdAfx.h" />
     <ClInclude Include="..\src\UAHMenuBar.h" />
     <ClInclude Include="..\src\Version.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\DarkMode.cpp" />
-    <ClCompile Include="..\src\DarkModeHook.cpp" />
     <ClCompile Include="..\src\DarkModeSubclass.cpp" />
+    <ClCompile Include="..\src\DmlibColor.cpp" />
+    <ClCompile Include="..\src\DmlibDpi.cpp" />
+    <ClCompile Include="..\src\DmlibHook.cpp" />
+    <ClCompile Include="..\src\DmlibIni.cpp" />
+    <ClCompile Include="..\src\DmlibPaintHelper.cpp" />
+    <ClCompile Include="..\src\DmlibSubclass.cpp" />
+    <ClCompile Include="..\src\DmlibSubclassControl.cpp" />
+    <ClCompile Include="..\src\DmlibSubclassWindow.cpp" />
+    <ClCompile Include="..\src\DmlibWinApi.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

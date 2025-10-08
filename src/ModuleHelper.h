@@ -12,57 +12,71 @@
 
 #include <windows.h>
 
-template <typename P>
-inline auto loadFn(HMODULE handle, P& pointer, const char* name) -> bool
+namespace dmlib_module
 {
-	if (auto proc = ::GetProcAddress(handle, name); proc != nullptr)
+	template <typename P>
+	inline auto LoadFn(HMODULE handle, P& pointer, const char* name) -> bool
 	{
-		pointer = reinterpret_cast<P>(proc);
-		return true;
-	}
-	return false;
-}
-
-template <typename P>
-inline auto loadFn(HMODULE handle, P& pointer, WORD index) -> bool
-{
-	return loadFn(handle, pointer, MAKEINTRESOURCEA(index));
-}
-
-class ModuleHandle
-{
-public:
-	ModuleHandle() = delete;
-
-	explicit ModuleHandle(const wchar_t* moduleName)
-		: m_hModule(::LoadLibraryExW(moduleName, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32))
-	{}
-
-	ModuleHandle(const ModuleHandle&) = delete;
-	ModuleHandle& operator=(const ModuleHandle&) = delete;
-
-	ModuleHandle(ModuleHandle&&) = delete;
-	ModuleHandle& operator=(ModuleHandle&&) = delete;
-
-	~ModuleHandle()
-	{
-		if (m_hModule != nullptr)
+		if (auto proc = ::GetProcAddress(handle, name); proc != nullptr)
 		{
-			::FreeLibrary(m_hModule);
-			m_hModule = nullptr;
+			pointer = reinterpret_cast<P>(reinterpret_cast<INT_PTR>(proc));
+			return true;
 		}
+		return false;
 	}
 
-	[[nodiscard]] HMODULE get() const noexcept
+	template <typename P>
+	inline auto LoadFn(HMODULE handle, P& pointer, WORD index) -> bool
 	{
-		return m_hModule;
+		return dmlib_module::LoadFn(handle, pointer, MAKEINTRESOURCEA(index));
 	}
 
-	[[nodiscard]] bool isLoaded() const noexcept
+	template <typename P, typename D>
+	inline auto LoadFn(HMODULE handle, P& pointer, const char* name, D& dummy) -> bool
 	{
-		return m_hModule != nullptr;
+		const bool retVal = dmlib_module::LoadFn(handle, pointer, name);
+		if (!retVal)
+		{
+			pointer = static_cast<P>(dummy);
+		}
+		return retVal;
 	}
 
-private:
-	HMODULE m_hModule = nullptr;
-};
+	class ModuleHandle
+	{
+	public:
+		ModuleHandle() = delete;
+
+		explicit ModuleHandle(const wchar_t* moduleName)
+			: m_hModule(::LoadLibraryExW(moduleName, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32))
+		{}
+
+		ModuleHandle(const ModuleHandle&) = delete;
+		ModuleHandle& operator=(const ModuleHandle&) = delete;
+
+		ModuleHandle(ModuleHandle&&) = delete;
+		ModuleHandle& operator=(ModuleHandle&&) = delete;
+
+		~ModuleHandle()
+		{
+			if (m_hModule != nullptr)
+			{
+				::FreeLibrary(m_hModule);
+				m_hModule = nullptr;
+			}
+		}
+
+		[[nodiscard]] HMODULE get() const noexcept
+		{
+			return m_hModule;
+		}
+
+		[[nodiscard]] bool isLoaded() const noexcept
+		{
+			return m_hModule != nullptr;
+		}
+
+	private:
+		HMODULE m_hModule = nullptr;
+	};
+} // namespace dmlib_module
