@@ -7,6 +7,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// This file is part of darkmodelib library.
+
 
 #include "StdAfx.h"
 
@@ -77,9 +79,10 @@ static void renderButton(
 	if (hFont == nullptr)
 	{
 		hFont = reinterpret_cast<HFONT>(::SendMessage(hWnd, WM_GETFONT, 0, 0));
+		isFontCreated = false;
 	}
 
-	auto holdFont = dmlib_paint::GdiObject{ hdc, hFont, !isFontCreated };
+	const auto holdFont = dmlib_paint::GdiObject{ hdc, hFont, !isFontCreated };
 
 	// Style part
 
@@ -397,7 +400,6 @@ LRESULT CALLBACK dmlib_subclass::ButtonSubclass(
 			return 0;
 		}
 
-		case WM_DPICHANGED:
 		case WM_DPICHANGED_AFTERPARENT:
 		{
 			themeData.closeTheme();
@@ -508,7 +510,7 @@ static void paintGroupbox(HWND hWnd, HDC hdc, const dmlib_subclass::ButtonData& 
 		isFontCreated = false;
 	}
 
-	auto holdFont = static_cast<HFONT>(::SelectObject(hdc, hFont));
+	const auto holdFont = dmlib_paint::GdiObject{ hdc, hFont, !isFontCreated };
 
 	// Text rectangle part
 
@@ -578,12 +580,6 @@ static void paintGroupbox(HWND hWnd, HDC hdc, const dmlib_subclass::ButtonData& 
 		}
 
 		::DrawThemeTextEx(hTheme, hdc, BP_GROUPBOX, iStateID, buffer.c_str(), -1, dtFlags | DT_SINGLELINE, &rcText, &dtto);
-	}
-
-	::SelectObject(hdc, holdFont);
-	if (isFontCreated)
-	{
-		::DeleteObject(hFont);
 	}
 }
 
@@ -657,7 +653,6 @@ LRESULT CALLBACK dmlib_subclass::GroupboxSubclass(
 			return 0;
 		}
 
-		case WM_DPICHANGED:
 		case WM_DPICHANGED_AFTERPARENT:
 		{
 			themeData.closeTheme();
@@ -980,7 +975,6 @@ LRESULT CALLBACK dmlib_subclass::UpDownSubclass(
 			return 0;
 		}
 
-		case WM_DPICHANGED:
 		case WM_DPICHANGED_AFTERPARENT:
 		{
 			pUpDownData->updateRect(hWnd);
@@ -1453,10 +1447,9 @@ LRESULT CALLBACK dmlib_subclass::CustomBorderSubclass(
 			break;
 		}
 
-		case WM_DPICHANGED:
 		case WM_DPICHANGED_AFTERPARENT:
 		{
-			pBorderMetricsData->setMetricsForDpi((uMsg == WM_DPICHANGED) ? LOWORD(wParam) : dmlib_dpi::GetDpiForParent(hWnd));
+			pBorderMetricsData->setMetricsForDpi(dmlib_dpi::GetDpiForParent(hWnd));
 			DarkMode::redrawWindowFrame(hWnd);
 			return 0;
 		}
@@ -1568,7 +1561,7 @@ static void paintCombobox(HWND hWnd, HDC hdc, dmlib_subclass::ComboBoxData& comb
 
 	bool hasFocus = false;
 
-	const auto hFont = dmlib_paint::GdiObject{ hdc, hWnd };
+	const auto holdFont = dmlib_paint::GdiObject{ hdc, hWnd };
 	::SetBkMode(hdc, TRANSPARENT); // for non-theme DrawText
 
 	RECT rcArrow{ cbi.rcButton };
@@ -1824,7 +1817,6 @@ LRESULT CALLBACK dmlib_subclass::ComboBoxSubclass(
 			return retVal;
 		}
 
-		case WM_DPICHANGED:
 		case WM_DPICHANGED_AFTERPARENT:
 		{
 			themeData.closeTheme();
@@ -2041,6 +2033,12 @@ LRESULT CALLBACK dmlib_subclass::ListViewSubclass(
 				return retVal;
 			}
 			break;
+		}
+
+		case WM_DPICHANGED_AFTERPARENT:
+		{
+			DarkMode::setDarkListViewCheckboxes(hWnd);
+			return 0;
 		}
 
 		// For edit control, which is created when renaming/editing items
@@ -2320,7 +2318,6 @@ LRESULT CALLBACK dmlib_subclass::HeaderSubclass(
 			return 0;
 		}
 
-		case WM_DPICHANGED:
 		case WM_DPICHANGED_AFTERPARENT:
 		{
 			themeData.closeTheme();
@@ -2603,20 +2600,13 @@ LRESULT CALLBACK dmlib_subclass::StatusBarSubclass(
 			return 0;
 		}
 
-		case WM_DPICHANGED:
 		case WM_DPICHANGED_AFTERPARENT:
 		case WM_THEMECHANGED:
 		{
 			themeData.closeTheme();
 
-			NONCLIENTMETRICS ncm{};
-			ncm.cbSize = sizeof(NONCLIENTMETRICS);
-			if (::SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0) != FALSE)
-			{
-				LOGFONT lf{};
-				lf = ncm.lfStatusFont;
-				pStatusBarData->m_fontData.setFont(::CreateFontIndirectW(&lf));
-			}
+			const auto lf = LOGFONT{ dmlib_dpi::getSysFontForDpi(::GetParent(hWnd), dmlib_dpi::FontType::status) };
+			pStatusBarData->m_fontData.setFont(::CreateFontIndirectW(&lf));
 
 			if (uMsg != WM_THEMECHANGED)
 			{
@@ -2810,7 +2800,6 @@ LRESULT CALLBACK dmlib_subclass::ProgressBarSubclass(
 			return 0;
 		}
 
-		case WM_DPICHANGED:
 		case WM_DPICHANGED_AFTERPARENT:
 		{
 			themeData.closeTheme();
@@ -2938,7 +2927,7 @@ static void paintIPAddress(HWND hWnd, HDC hdc)
 	rcDot.right = rcDot.left + (2 * wSection);
 	::OffsetRect(&rcDot, 0, -1);
 
-	const auto hFont = dmlib_paint::GdiObject{ hdc, reinterpret_cast<HFONT>(::SendMessage(hWnd, WM_GETFONT, 0, 0)), true };
+	const auto holdFont = dmlib_paint::GdiObject{ hdc, reinterpret_cast<HFONT>(::SendMessage(hWnd, WM_GETFONT, 0, 0)), true };
 	static constexpr UINT dtFlags = DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX;
 
 	for (int i = 0; i < 3; ++i)
@@ -3022,6 +3011,72 @@ LRESULT CALLBACK dmlib_subclass::IPAddressSubclass(
 
 			::EndPaint(hWnd, &ps);
 			return 0;
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
+ * @brief Window subclass procedure for custom color for hot key control.
+ *
+ * @param[in]   hWnd        Window handle being subclassed.
+ * @param[in]   uMsg        Message identifier.
+ * @param[in]   wParam      Message-specific data.
+ * @param[in]   lParam      Message-specific data.
+ * @param[in]   uIdSubclass Subclass identifier.
+ * @param[in]   dwRefData   Reserved data (unused).
+ * @return LRESULT Result of message processing.
+ *
+ * @see DarkMode::setHotKeyCtrlSubclass()
+ * @see DarkMode::removeHotKeyCtrlSubclass()
+ */
+LRESULT CALLBACK dmlib_subclass::HotKeySubclass(
+	HWND hWnd,
+	UINT uMsg,
+	WPARAM wParam,
+	LPARAM lParam,
+	UINT_PTR uIdSubclass,
+	[[maybe_unused]] DWORD_PTR dwRefData
+)
+{
+	switch (uMsg)
+	{
+		case WM_NCDESTROY:
+		{
+			::RemoveWindowSubclass(hWnd, HotKeySubclass, uIdSubclass);
+			dmlib_hook::unhookSysColor();
+			break;
+		}
+
+		case WM_ERASEBKGND:
+		{
+			if (!DarkMode::isEnabled())
+			{
+				break;
+			}
+
+			RECT rcClient{};
+			::GetClientRect(hWnd, &rcClient);
+			::FillRect(reinterpret_cast<HDC>(wParam), &rcClient, DarkMode::getDlgBackgroundBrush());
+			return TRUE;
+		}
+
+		case WM_PAINT:
+		{
+			if (!DarkMode::isEnabled())
+			{
+				break;
+			}
+
+			dmlib_hook::hookSysColor();
+			const LRESULT resVal = ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			dmlib_hook::unhookSysColor();
+			return resVal;
 		}
 
 		default:

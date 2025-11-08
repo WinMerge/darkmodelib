@@ -7,6 +7,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// This file is part of darkmodelib library.
+
 // Based on the Notepad++ dark mode code licensed under GPLv3.
 // Originally by adzm / Adam D. Walling, with modifications by the Notepad++ team.
 // Heavily modified by ozone10 (Notepad++ contributor).
@@ -29,7 +31,6 @@
 #if !defined(_DARKMODELIB_NO_INI_CONFIG)
 #include <array>
 #endif
-#include <cmath>
 #include <string>
 
 #include "DmlibColor.h"
@@ -825,7 +826,7 @@ bool DarkMode::isEnabled()
  */
 bool DarkMode::isExperimentalActive()
 {
-	return g_darkModeEnabled;
+	return dmlib_win32api::IsDarkModeActive();
 }
 
 /**
@@ -835,7 +836,7 @@ bool DarkMode::isExperimentalActive()
  */
 bool DarkMode::isExperimentalSupported()
 {
-	return g_darkModeSupported;
+	return dmlib_win32api::IsDarkModeSupported();
 }
 
 /**
@@ -875,6 +876,13 @@ bool DarkMode::isAtLeastWindows11()
 DWORD DarkMode::getWindowsBuildNumber()
 {
 	return dmlib_win32api::GetWindowsBuildNumber();
+}
+
+/// Check if OS is at leaast Windows 11 version 25H2 build 26200.
+static bool isAtLeastWin11Ver25H2()
+{
+	static constexpr DWORD win11Build25H2 = 26200;
+	return dmlib_win32api::GetWindowsBuildNumber() >= win11Build25H2;
 }
 
 /**
@@ -924,16 +932,15 @@ bool DarkMode::isDarkModeReg()
 {
 	DWORD data{};
 	DWORD dwBufSize = sizeof(data);
-	LPCWSTR lpSubKey = L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
-	LPCWSTR lpValue = L"AppsUseLightTheme";
+	static constexpr LPCWSTR lpSubKey = L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
+	static constexpr LPCWSTR lpValue = L"AppsUseLightTheme";
 
-	if (::RegGetValueW(HKEY_CURRENT_USER, lpSubKey, lpValue, RRF_RT_REG_DWORD, nullptr, &data, &dwBufSize) != ERROR_SUCCESS)
+	if (::RegGetValueW(HKEY_CURRENT_USER, lpSubKey, lpValue, RRF_RT_REG_DWORD, nullptr, &data, &dwBufSize) == ERROR_SUCCESS)
 	{
-		return false;
+		// dark mode is 0, light mode is 1
+		return data == 0UL;
 	}
-
-	// dark mode is 0, light mode is 1
-	return data == 0UL;
+	return false;
 }
 
 /**
@@ -1658,13 +1665,7 @@ void DarkMode::removeHeaderCtrlSubclass(HWND hWnd)
  */
 void DarkMode::setStatusBarCtrlSubclass(HWND hWnd)
 {
-	LOGFONT lf{};
-	NONCLIENTMETRICS ncm{};
-	ncm.cbSize = sizeof(NONCLIENTMETRICS);
-	if (::SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0) != FALSE)
-	{
-		lf = ncm.lfStatusFont;
-	}
+	const auto lf = LOGFONT{ dmlib_dpi::getSysFontForDpi(::GetParent(hWnd), dmlib_dpi::FontType::status) };
 	dmlib_subclass::SetSubclass<dmlib_subclass::StatusBarData>(hWnd, dmlib_subclass::StatusBarSubclass, dmlib_subclass::SubclassID::statusBar, ::CreateFontIndirectW(&lf));
 }
 
@@ -1870,6 +1871,58 @@ static void setIPAddressCtrlSubclass(HWND hWnd, DarkModeParams p)
 }
 
 /**
+ * @brief Applies custom color subclassing to a hot key control.
+ *
+ * Handles custom colors for hot key control via hooks.
+ *
+ * @param[in] hWnd Handle to the hot key control.
+ *
+ * @see dmlib_subclass::HotKeySubclass()
+ * @see DarkMode::removeHotKeyCtrlSubclass()
+ */
+void DarkMode::setHotKeyCtrlSubclass(HWND hWnd)
+{
+	dmlib_subclass::SetSubclass(hWnd, dmlib_subclass::HotKeySubclass, dmlib_subclass::SubclassID::hotKey);
+}
+
+/**
+ * @brief Removes the custom color subclass from a hot key control.
+ *
+ * @param[in] hWnd Handle to the hot key control.
+ *
+ * @see dmlib_subclass::HotKeySubclass()
+ * @see DarkMode::setHotKeyCtrlSubclass()
+ */
+void DarkMode::removeHotKeyCtrlSubclass(HWND hWnd)
+{
+	dmlib_subclass::RemoveSubclass(hWnd, dmlib_subclass::HotKeySubclass, dmlib_subclass::SubclassID::hotKey);
+}
+
+/**
+ * @brief Applies custom color subclassing to a hot key control and adjusts its border style.
+ *
+ * Overload wrapper that applies the subclass only if `p.m_subclass` is `true`.
+ * Adjusts border style depending on used dark mode state.
+ *
+ * @param[in]   hWnd    Handle to the hot key control.
+ * @param[in]   p       Parameters controlling whether to apply subclassing.
+ *
+ * @see DarkMode::setHotKeyCtrlSubclass()
+ */
+static void setHotKeyCtrlSubclass(HWND hWnd, DarkModeParams p)
+{
+	if (p.m_subclass)
+	{
+		DarkMode::setHotKeyCtrlSubclass(hWnd);
+	}
+
+	if (p.m_theme)
+	{
+		DarkMode::replaceClientEdgeWithBorderSafe(hWnd);
+	}
+}
+
+/**
  * @brief Applies theming to a tree view control.
  *
  * Sets custom text and background colors, applies a themed window style,
@@ -2021,7 +2074,7 @@ static void setRichEditCtrlTheme(HWND hWnd, DarkModeParams p)
  *      `WC_LISTVIEW`, `WC_TREEVIEW`, `REBARCLASSNAME`, `TOOLBARCLASSNAME`,
  *      `UPDOWN_CLASS`, `WC_TABCONTROL`, `STATUSCLASSNAME`, `WC_SCROLLBAR`,
  *      `WC_COMBOBOXEX`, `PROGRESS_CLASS`, `WC_LINK`, `TRACKBAR_CLASS`,
- *      `RICHEDIT_CLASS`, `MSFTEDIT_CLASS`, and `WC_IPADDRESS`
+ *      `RICHEDIT_CLASS`, `MSFTEDIT_CLASS`, `WC_IPADDRESS`, and `HOTKEY_CLASS`
  * - The `#32770` dialog class is commented out for debugging purposes.
  *
  * @see DarkMode::setChildCtrlsSubclassAndTheme()
@@ -2045,6 +2098,7 @@ static void setRichEditCtrlTheme(HWND hWnd, DarkModeParams p)
  * @see DarkMode::setTrackbarCtrlTheme()
  * @see DarkMode::setRichEditCtrlTheme()
  * @see DarkMode::setIPAddressCtrlSubclass()
+ * @see DarkMode::setHotKeyCtrlSubclass()
  */
 static BOOL CALLBACK DarkEnumChildProc(HWND hWnd, LPARAM lParam)
 {
@@ -2164,8 +2218,25 @@ static BOOL CALLBACK DarkEnumChildProc(HWND hWnd, LPARAM lParam)
 		setIPAddressCtrlSubclass(hWnd, p);
 		return TRUE;
 	}
+
+	if (className == HOTKEY_CLASS)
+	{
+		setHotKeyCtrlSubclass(hWnd, p);
+		return TRUE;
+	}
+
 #if 0 // for debugging
 	if (className == L"#32770") // dialog
+	{
+		return TRUE;
+	}
+
+	if (className == DATETIMEPICK_CLASS) // date and time picker
+	{
+		return TRUE;
+	}
+
+	if (className == MONTHCAL_CLASS) // month calendar
 	{
 		return TRUE;
 	}
@@ -2652,6 +2723,20 @@ void DarkMode::setDarkTooltips(HWND hWnd, int tooltipType)
 }
 
 /**
+ * @brief Applies "DarkMode_DarkTheme" visual style if supported and experimental mode is active.
+ *
+ * If OS is at least Windows 11 version 25H2 applies "DarkMode_DarkTheme" visual style,
+ * else applies "DarkMode_Explorer" visual style.
+ *
+ * @param[in] hWnd Handle to the control or window to theme.
+ */
+void DarkMode::setDarkThemeTheme(HWND hWnd)
+{
+	static const wchar_t* themeName = isAtLeastWin11Ver25H2() ? L"DarkMode_DarkTheme" : L"DarkMode_Explorer";
+	::SetWindowTheme(hWnd, DarkMode::isExperimentalActive() ? themeName : nullptr, nullptr);
+}
+
+/**
  * @brief Sets the color of line above a toolbar control for non-classic mode.
  *
  * Sends `TB_SETCOLORSCHEME` to customize the line drawn above the toolbar.
@@ -2724,7 +2809,7 @@ void DarkMode::setDarkListViewCheckboxes(HWND hWnd)
 	HDC hdc = ::GetDC(nullptr);
 
 	const bool useDark = DarkMode::isExperimentalActive() && DarkMode::isThemeDark();
-	HTHEME hTheme = ::OpenThemeData(nullptr, useDark ? L"DarkMode_Explorer::Button" : VSCLASS_BUTTON);
+	HTHEME hTheme = dmlib_dpi::OpenThemeDataForDpi(nullptr, useDark ? L"DarkMode_Explorer::Button" : VSCLASS_BUTTON, ::GetParent(hWnd));
 
 	SIZE szBox{};
 	::GetThemePartSize(hTheme, hdc, BP_CHECKBOX, CBS_UNCHECKEDNORMAL, nullptr, TS_DRAW, &szBox);
@@ -2991,51 +3076,10 @@ void DarkMode::disableVisualStyle(HWND hWnd, bool doDisable)
  *
  * @param[in] clr COLORREF in 0xBBGGRR format.
  * @return Lightness value as a double.
- *
- * @note Based on: https://stackoverflow.com/a/56678483
  */
 double DarkMode::calculatePerceivedLightness(COLORREF clr)
 {
-	auto linearValue = [](double colorChannel) -> double
-	{
-		colorChannel /= 255.0;
-
-		static constexpr double treshhold = 0.04045;
-		static constexpr double lowScalingFactor = 12.92;
-		static constexpr double gammaOffset = 0.055;
-		static constexpr double gammaScalingFactor = 1.055;
-		static constexpr double gammaExp = 2.4;
-
-		if (colorChannel <= treshhold)
-		{
-			return colorChannel / lowScalingFactor;
-		}
-		return std::pow(((colorChannel + gammaOffset) / gammaScalingFactor), gammaExp);
-	};
-
-	const double r = linearValue(static_cast<double>(GetRValue(clr)));
-	const double g = linearValue(static_cast<double>(GetGValue(clr)));
-	const double b = linearValue(static_cast<double>(GetBValue(clr)));
-
-	static constexpr double rWeight = 0.2126;
-	static constexpr double gWeight = 0.7152;
-	static constexpr double bWeight = 0.0722;
-
-	const double luminance = (rWeight * r) + (gWeight * g) + (bWeight * b);
-
-	static constexpr double cieEpsilon = 216.0 / 24389.0;
-	static constexpr double cieKappa = 24389.0 / 27.0;
-	static constexpr double oneThird = 1.0 / 3.0;
-	static constexpr double scalingFactor = 116.0;
-	static constexpr double offset = 16.0;
-
-	// calculate lightness
-
-	if (luminance <= cieEpsilon)
-	{
-		return (luminance * cieKappa);
-	}
-	return ((std::pow(luminance, oneThird) * scalingFactor) - offset);
+	return dmlib_color::calculatePerceivedLightness(clr);
 }
 
 /**

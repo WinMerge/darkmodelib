@@ -7,13 +7,15 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// This file is part of darkmodelib library.
+
 
 #define DM_VERSION_MAJOR    0
-#define DM_VERSION_MINOR    36
+#define DM_VERSION_MINOR    39
 #define DM_VERSION_REVISION 1
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define DM_VERSION "Darkmodelib v0.36.1"
+#define DM_VERSION "Darkmodelib v0.39.1"
 #define DM_COPYRIGHT "Copyright (c) 2024-2025 ozone10"

@@ -7,6 +7,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// This file is part of darkmodelib demo.
+
 
 #pragma once
 
@@ -21,7 +23,7 @@ typedef struct _TASKDIALOGCONFIG TASKDIALOGCONFIG; // forward declaration, from 
 namespace dmlib_module
 {
 	template <typename P>
-	inline auto LoadFn(HMODULE handle, P& pointer, const char* name) -> bool
+	inline auto LoadFn(HMODULE handle, P& pointer, const char* name) noexcept -> bool
 	{
 		if (auto proc = ::GetProcAddress(handle, name); proc != nullptr)
 		{
@@ -32,13 +34,13 @@ namespace dmlib_module
 	}
 
 	template <typename P>
-	inline auto LoadFn(HMODULE handle, P& pointer, WORD index) -> bool
+	inline auto LoadFn(HMODULE handle, P& pointer, WORD index) noexcept -> bool
 	{
 		return  dmlib_module::LoadFn(handle, pointer, MAKEINTRESOURCEA(index));
 	};
 
 	template <typename P, typename D>
-	inline auto LoadFn(HMODULE handle, P& pointer, const char* name, D& dummy) -> bool
+	inline auto LoadFn(HMODULE handle, P& pointer, const char* name, D& dummy) noexcept -> bool
 	{
 		const bool retVal = dmlib_module::LoadFn(handle, pointer, name);
 		if (!retVal)
@@ -311,6 +313,9 @@ namespace DarkMode
 	inline void DummySetIPAddressCtrlSubclass(HWND) {}
 	inline void DummyRemoveIPAddressCtrlSubclass(HWND) {}
 
+	inline void DummySetHotKeyCtrlSubclass(HWND) {}
+	inline void DummyRemoveHotKeyCtrlSubclass(HWND) {}
+
 	inline void DummySetChildCtrlsSubclassAndThemeEx(HWND, bool, bool) {}
 	inline void DummySetChildCtrlsSubclassAndTheme(HWND) {}
 	inline void DummySetChildCtrlsTheme(HWND) {}
@@ -341,6 +346,8 @@ namespace DarkMode
 	inline void DummySetDarkExplorerTheme(HWND) {}
 	inline void DummySetDarkScrollBar(HWND) {}
 	inline void DummySetDarkTooltips(HWND, int) {}
+	inline void DummySetDarkThemeTheme(HWND) {}
+
 	inline void DummySetDarkLineAbovePanelToolbar(HWND) {}
 
 	inline void DummySetDarkListView(HWND) {}

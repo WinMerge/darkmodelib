@@ -7,6 +7,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// This file is part of darkmodelib library.
+
 
 #pragma once
 
@@ -530,4 +532,7 @@ namespace dmlib_color
 		return clrTmp;
 	}
 
+	/// Calculates perceptual lightness of a COLORREF color.
+	[[nodiscard]] double calculatePerceivedLightness(COLORREF clr);
+	[[nodiscard]] COLORREF getAccentColor(bool adjust);
 } // namespace dmlib_color

@@ -7,6 +7,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// This file is part of darkmodelib library.
+
 
 #include "StdAfx.h"
 
@@ -18,6 +20,7 @@
 #include <vsstyle.h>
 #include <vssym32.h>
 
+#include <cstdint>
 #include <utility>
 
 #if defined(_DARKMODELIB_USE_SCROLLBAR_FIX) && (_DARKMODELIB_USE_SCROLLBAR_FIX > 0)
@@ -25,13 +28,15 @@
 #include <unordered_set>
 #endif
 
-#include "DmlibWinApi.h"
 #include "ModuleHelper.h"
 
 #include "IatHook.h"
 
-extern bool g_darkModeSupported;
-extern bool g_darkModeEnabled;
+namespace dmlib_win32api
+{
+	[[nodiscard]] bool IsWindows11();
+	[[nodiscard]] bool IsDarkModeActive();
+}
 
 using fnFindThunkInModule = auto (*)(void* moduleBase, const char* dllName, const char* funcName) -> PIMAGE_THUNK_DATA;
 
@@ -40,7 +45,7 @@ using fnGetThemeColor = auto (WINAPI*)(HTHEME hTheme, int iPartId, int iStateId,
 using fnDrawThemeBackgroundEx = auto (WINAPI*)(HTHEME hTheme, HDC hdc, int iPartId, int iStateId, LPCRECT pRect, const DTBGOPTS* pOptions) -> HRESULT;
 
 template <typename P>
-static auto ReplaceFunction(IMAGE_THUNK_DATA* addr, const P& newFunction) -> P
+static auto ReplaceFunction(IMAGE_THUNK_DATA* addr, const P& newFunction) noexcept -> P
 {
 	DWORD oldProtect = 0;
 	if (::VirtualProtect(addr, sizeof(IMAGE_THUNK_DATA), PAGE_READWRITE, &oldProtect) == FALSE)
@@ -64,9 +69,9 @@ struct HookData
 	const char* m_fnName = nullptr;
 	fnFindThunkInModule m_findFn = nullptr;
 
-	uint16_t m_ord = 0;
+	std::uint16_t m_ord = 0;
 
-	void init(const char* dllName, const char* funcName, fnFindThunkInModule findFn)
+	void init(const char* dllName, const char* funcName, fnFindThunkInModule findFn) noexcept
 	{
 		if (m_dllName == nullptr)
 		{
@@ -78,7 +83,7 @@ struct HookData
 		}
 	}
 
-	void init(const char* dllName, uint16_t ord)
+	void init(const char* dllName, std::uint16_t ord) noexcept
 	{
 		if (m_dllName == nullptr)
 		{
@@ -90,7 +95,7 @@ struct HookData
 		}
 	}
 
-	[[nodiscard]] IMAGE_THUNK_DATA* findAddr(HMODULE hMod) const
+	[[nodiscard]] IMAGE_THUNK_DATA* findAddr(HMODULE hMod) const noexcept
 	{
 		if (m_fnName != nullptr && m_findFn != nullptr)
 		{
@@ -107,7 +112,7 @@ struct HookData
 };
 
 template <typename T, typename... InitArgs>
-static auto HookFunction(HookData<T>& hookData, T newFn, const char* dllName, InitArgs&&... args) -> bool
+static auto HookFunction(HookData<T>& hookData, T newFn, const char* dllName, InitArgs&&... args) noexcept -> bool
 {
 	const dmlib_module::ModuleHandle moduleComctl(L"comctl32.dll");
 	if (!moduleComctl.isLoaded())
@@ -290,7 +295,7 @@ void dmlib_hook::setMySysColor(int nIndex, COLORREF clr)
 
 static DWORD WINAPI MyGetSysColor(int nIndex)
 {
-	if (!g_darkModeEnabled)
+	if (!dmlib_win32api::IsDarkModeActive())
 	{
 		return g_hookDataGetSysColor.m_trueFn(nIndex);
 	}
@@ -365,7 +370,7 @@ static HRESULT WINAPI MyGetThemeColor(
 )
 {
 	const HRESULT retVal = g_hookDataGetThemeColor.m_trueFn(hTheme, iPartId, iStateId, iPropId, pColor);
-	if (!g_darkModeEnabled)
+	if (!dmlib_win32api::IsDarkModeActive())
 	{
 		return retVal;
 	}
@@ -406,7 +411,7 @@ static HRESULT WINAPI MyGetThemeColor(
 	return retVal;
 }
 
-static constexpr uint16_t kDrawThemeBackgroundExOrdinal = 47;
+static constexpr std::uint16_t kDrawThemeBackgroundExOrdinal = 47;
 
 static constexpr COLORREF kMainPaneBgClr = RGB(44, 44, 44);
 static constexpr COLORREF kFooterBgClr = RGB(32, 32, 32);
@@ -423,7 +428,7 @@ static HRESULT WINAPI MyDrawThemeBackgroundEx(
 	const DTBGOPTS* pOptions
 )
 {
-	if (!g_darkModeEnabled)
+	if (!dmlib_win32api::IsDarkModeActive())
 	{
 		return g_hookDataDrawThemeBackgroundEx.m_trueFn(hTheme, hdc, iPartId, iStateId, pRect, pOptions);
 	}

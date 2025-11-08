@@ -7,6 +7,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// This file is part of darkmodelib library.
+
 // Based on parts of the Notepad++ dpi code licensed under GPLv3.
 // Originally by ozone10.
 
@@ -15,28 +17,40 @@
 
 #include <windows.h>
 
-#ifndef WM_DPICHANGED
-#define WM_DPICHANGED 0x02E0
-#endif
+#include <uxtheme.h>
 
-#if 0 // maybe for future hidpi enhancement
-#ifndef WM_DPICHANGED_BEFOREPARENT
-#define WM_DPICHANGED_BEFOREPARENT 0x02E2
-#endif
-#endif
+#if defined(__GNUC__) || (WINVER < _WIN32_WINNT_WIN7)
+	#ifndef WM_DPICHANGED
+	#define WM_DPICHANGED 0x02E0
+	#endif
 
-#ifndef WM_DPICHANGED_AFTERPARENT
-#define WM_DPICHANGED_AFTERPARENT 0x02E3
-#endif
+	#ifndef WM_DPICHANGED_BEFOREPARENT
+	#define WM_DPICHANGED_BEFOREPARENT 0x02E2
+	#endif
 
-#if 0 // maybe for future hidpi enhancement
-#ifndef WM_GETDPISCALEDSIZE
-#define WM_GETDPISCALEDSIZE 0x02E4
-#endif
+	#ifndef WM_DPICHANGED_AFTERPARENT
+	#define WM_DPICHANGED_AFTERPARENT 0x02E3
+	#endif
+
+	#ifndef WM_GETDPISCALEDSIZE
+	#define WM_GETDPISCALEDSIZE 0x02E4
+	#endif
 #endif
 
 namespace dmlib_dpi
 {
+	enum class FontType
+	{
+		menu,
+		status,
+		message,
+		caption,
+		smcaption
+	};
+
+	inline constexpr UINT kDefaultFontDpi = 72;
+	inline constexpr UINT kDefaultFontScaleFactor = 100;
+
 	bool InitDpiAPI();
 
 	[[nodiscard]] UINT GetDpiForSystem();
@@ -73,13 +87,44 @@ namespace dmlib_dpi
 		return dmlib_dpi::scale(x, USER_DEFAULT_SCREEN_DPI, dmlib_dpi::GetDpiForWindow(hWnd));
 	}
 
-	[[nodiscard]] inline int scaleFont(int pt, UINT dpi)
+	[[nodiscard]] inline int scaleFontForDpi(int pt, UINT dpi)
 	{
-		return -(dmlib_dpi::scale(pt, dpi, 72));
+		return dmlib_dpi::scale(pt, dpi, kDefaultFontDpi);
 	}
 
-	[[nodiscard]] inline int scaleFont(int pt, HWND hWnd)
+	[[nodiscard]] inline int scaleFontForDpi(int pt, HWND hWnd)
 	{
-		return -(dmlib_dpi::scale(pt, dmlib_dpi::GetDpiForWindow(hWnd), 72));
+		return dmlib_dpi::scale(pt, dmlib_dpi::GetDpiForWindow(hWnd), kDefaultFontDpi);
 	}
+
+	[[nodiscard]] LOGFONT getSysFontForDpi(UINT dpi, FontType type);
+	[[nodiscard]] inline LOGFONT getSysFontForDpi(HWND hWnd, FontType type)
+	{
+		return dmlib_dpi::getSysFontForDpi(dmlib_dpi::GetDpiForWindow(hWnd), type);
+	}
+
+	DPI_AWARENESS_CONTEXT SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT dpiContext);
+
+	void loadIcon(HINSTANCE hinst, const wchar_t* pszName, int cx, int cy, HICON* phico);
+
+	[[nodiscard]] HTHEME OpenThemeDataForDpi(HWND hwnd, LPCWSTR pszClassList, UINT dpi);
+
+	[[nodiscard]] inline HTHEME OpenThemeDataForDpi(HWND hwnd, LPCWSTR pszClassList, HWND hWndDpi)
+	{
+		return dmlib_dpi::OpenThemeDataForDpi(hwnd, pszClassList, dmlib_dpi::GetDpiForWindow(hWndDpi));
+	}
+
+	/// Get text scale factor from the Windows registry.
+	[[nodiscard]] DWORD getTextScaleFactor();
+
+	[[nodiscard]] inline int scaleFontForFactor(int pt, UINT textScaleFactor)
+	{
+		return dmlib_dpi::scale(pt, textScaleFactor, kDefaultFontScaleFactor);
+	}
+
+	[[nodiscard]] inline int scaleFontForFactor(int pt)
+	{
+		return dmlib_dpi::scale(pt, dmlib_dpi::getTextScaleFactor(), kDefaultFontScaleFactor);
+	}
+
 } // namespace dmlib_dpi

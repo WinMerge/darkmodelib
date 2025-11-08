@@ -12,6 +12,8 @@
  *  See LICENSE-win32-darkmode for more information.
  */
 
+// This file is part of darkmodelib library.
+
 
 #include "StdAfx.h"
 
@@ -21,10 +23,16 @@
 
 #include <cwchar>
 
-#if defined(_DARKMODELIB_USE_SCROLLBAR_FIX) && (_DARKMODELIB_USE_SCROLLBAR_FIX > 0)
-#include "DmlibHook.h"
-#endif
 #include "ModuleHelper.h"
+
+#if defined(_DARKMODELIB_USE_SCROLLBAR_FIX) && (_DARKMODELIB_USE_SCROLLBAR_FIX > 0)
+namespace dmlib_hook
+{
+	bool loadOpenNcThemeData(const HMODULE& hUxtheme);
+	void fixDarkScrollBar();
+}
+#endif
+
 
 enum IMMERSIVE_HC_CACHE_MODE
 {
@@ -126,8 +134,8 @@ static fnGetIsImmersiveColorUsingHighContrast pfGetIsImmersiveColorUsingHighCont
 //static fnShouldSystemUseDarkMode pfShouldSystemUseDarkMode = nullptr;
 static fnSetPreferredAppMode pfSetPreferredAppMode = nullptr;
 
-bool g_darkModeSupported = false;
-bool g_darkModeEnabled = false;
+static bool g_darkModeSupported = false;
+static bool g_darkModeActive = false;
 static DWORD g_buildNumber = 0;
 
 [[nodiscard]] static bool ShouldAppsUseDarkMode()
@@ -354,6 +362,26 @@ DWORD dmlib_win32api::GetWindowsBuildNumber()
 }
 
 /**
+ * @brief Checks if dark mode API is supported.
+ *
+ * @return `true` if dark mode API is supported.
+ */
+bool dmlib_win32api::IsDarkModeSupported()
+{
+	return g_darkModeSupported;
+}
+
+/**
+ * @brief Checks if dark mode is active.
+ *
+ * @return `true` if dark mode is active.
+ */
+bool dmlib_win32api::IsDarkModeActive()
+{
+	return g_darkModeActive;
+}
+
+/**
  * @brief Initializes undocumented dark mode API.
  */
 void dmlib_win32api::InitDarkMode()
@@ -448,6 +476,6 @@ void dmlib_win32api::SetDarkMode(bool useDark, [[maybe_unused]] bool applyScroll
 			dmlib_hook::fixDarkScrollBar();
 		}
 #endif
-		g_darkModeEnabled = useDark && ShouldAppsUseDarkMode() && !dmlib_win32api::IsHighContrast();
+		g_darkModeActive = useDark && ShouldAppsUseDarkMode() && !dmlib_win32api::IsHighContrast();
 	}
 }

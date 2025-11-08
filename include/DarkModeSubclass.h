@@ -7,6 +7,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// This file is part of darkmodelib library.
+
 // Based on the Notepad++ dark mode code licensed under GPLv3.
 // Originally by adzm / Adam D. Walling, with modifications by the Notepad++ team.
 // Heavily modified by ozone10 (Notepad++ contributor).
@@ -26,6 +28,7 @@
 #pragma comment(lib, "uxtheme.lib")
 #pragma comment(lib, "Comctl32.lib")
 #pragma comment(lib, "Gdi32.lib")
+#pragma comment(lib, "Shlwapi.lib")
 #endif
 
 #if defined(DMLIB_DLL)
@@ -452,6 +455,11 @@ namespace DarkMode
 	/// Removes the owner drawn subclass from a IP address control.
 	DMLIB_API void removeIPAddressCtrlSubclass(HWND hWnd);
 
+	/// Applies custom color subclassing to a hot key control.
+	DMLIB_API void setHotKeyCtrlSubclass(HWND hWnd);
+	/// Removes the custom color subclass from a hot key control.
+	DMLIB_API void removeHotKeyCtrlSubclass(HWND hWnd);
+
 	// ========================================================================
 	// Child Subclassing
 	// ========================================================================
@@ -514,6 +522,8 @@ namespace DarkMode
 	DMLIB_API void setDarkScrollBar(HWND hWnd);
 	/// Applies "DarkMode_Explorer" visual style to tooltip controls based on context.
 	DMLIB_API void setDarkTooltips(HWND hWnd, int tooltipType);
+	/// Applies "DarkMode_DarkTheme" visual style if supported and experimental mode is active.
+	DMLIB_API void setDarkThemeTheme(HWND hWnd);
 
 	/// Sets the color of line above a toolbar control for non-classic mode.
 	DMLIB_API void setDarkLineAbovePanelToolbar(HWND hWnd);

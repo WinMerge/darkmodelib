@@ -7,13 +7,19 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// This file is part of darkmodelib library.
+
 
 #include "StdAfx.h"
 
 #include "DmlibSubclass.h"
 
 #if defined(_DARKMODELIB_PREFER_THEME)
-#include "DmlibWinApi.h"
+namespace dmlib_win32api
+{
+	[[nodiscard]] bool IsWindows10();
+	[[nodiscard]] bool IsDarkModeSupported();
+}
 #endif
 
 /**
@@ -26,7 +32,7 @@
 bool dmlib_subclass::isThemePrefered()
 {
 #if defined(_DARKMODELIB_PREFER_THEME)
-	return dmlib_win32api::IsWindows10() && g_darkModeSupported;
+	return dmlib_win32api::IsWindows10() && dmlib_win32api::IsDarkModeSupported();
 #else
 	return false;
 #endif
