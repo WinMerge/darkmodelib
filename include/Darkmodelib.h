@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 /*
- * Copyright (c) 2025 ozone10
+ * Copyright (c) 2025-2026 ozone10
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -23,7 +23,7 @@
 	&& (defined(__x86_64__) || defined(_M_X64)\
 	|| defined(__arm64__) || defined(__arm64) || defined(_M_ARM64))*/
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #pragma comment(lib, "dwmapi.lib")
 #pragma comment(lib, "uxtheme.lib")
 #pragma comment(lib, "Comctl32.lib")
@@ -31,7 +31,7 @@
 #pragma comment(lib, "Shlwapi.lib")
 #endif
 
-#if defined(DMLIB_DLL)
+#ifdef DMLIB_DLL
 	#if defined(DMLIB_EXPORTS)
 		#define DMLIB_API __declspec(dllexport)
 	#else
@@ -41,13 +41,22 @@
 	#define DMLIB_API
 #endif
 
-typedef struct _TASKDIALOGCONFIG TASKDIALOGCONFIG; // forward declaration, from <CommCtrl.h>
+#ifdef __clang__
+	#pragma clang diagnostic push
+	// identifier '_TASKDIALOGCONFIG' is reserved because it starts with '_' followed by a capital letter
+	#pragma clang diagnostic ignored "-Wreserved-identifier"
+#endif
 
+typedef struct _TASKDIALOGCONFIG TASKDIALOGCONFIG; // NOLINT // forward declaration, from <CommCtrl.h>
+
+#ifdef __clang__
+	#pragma clang diagnostic pop
+#endif
 /**
- * @namespace DarkMode
+ * @namespace dmlib
  * @brief Provides dark mode theming, subclassing, and rendering utilities for most Win32 controls.
  */
-namespace DarkMode
+namespace dmlib
 {
 	struct Colors
 	{
@@ -63,6 +72,7 @@ namespace DarkMode
 		COLORREF edge = 0;
 		COLORREF hotEdge = 0;
 		COLORREF disabledEdge = 0;
+		COLORREF highlight = 0;
 	};
 
 	struct ColorsView
@@ -75,8 +85,6 @@ namespace DarkMode
 		COLORREF headerText = 0;
 		COLORREF headerEdge = 0;
 	};
-
-	// unsigned char == std::uint8_t
 
 	/**
 	 * @brief Represents tooltip from different controls.
@@ -119,9 +127,9 @@ namespace DarkMode
 	 * - `light`: Light mode appearance.
 	 * - `dark`: Dark mode appearance.
 	 *
-	 * Set via configuration and used by style evaluators (e.g. @ref DarkMode::calculateTreeViewStyle).
+	 * Set via configuration and used by style evaluators (e.g. @ref dmlib::calculateTreeViewStyle).
 	 *
-	 * @see DarkMode::calculateTreeViewStyle()
+	 * @see dmlib::calculateTreeViewStyle()
 	 */
 	enum class TreeViewStyle : unsigned char
 	{
@@ -133,10 +141,10 @@ namespace DarkMode
 	/**
 	 * @brief Describes metadata fields and compile-time features of the dark mode library.
 	 *
-	 * Values of this enum are used with @ref DarkMode::getLibInfo to retrieve version numbers and
+	 * Values of this enum are used with @ref dmlib::getLibInfo to retrieve version numbers and
 	 * determine whether specific features were enabled during compilation.
 	 *
-	 * @see DarkMode::getLibInfo()
+	 * @see dmlib::getLibInfo()
 	 */
 	enum class LibInfo : unsigned char
 	{
@@ -149,19 +157,23 @@ namespace DarkMode
 		useDlgProcCtl,    ///< True if WM_CTLCOLORxxx can be handled directly in dialog procedure.
 		preferTheme,      ///< True if theme is supported and can be used over subclass, e.g. combo box on Windows 10+.
 		useSBFix,         ///< '1' if scroll bar fix is applied to all scroll bars, '2' if scroll bar fix can be limited to specific window.
+		//
+		/// '0x001' if custom nothrow implementation of std::make_unique is used,
+		/// '0x002' if also custom buffer instead of std::wstring is used.
+		memAPI,
 		maxValue          ///< Sentinel value for internal validation (not intended for use).
 	};
 
 	/**
 	 * @brief Defines the available dark mode types for manual configurations.
 	 *
-	 * Can be used in `DarkMode::initDarkModeConfig` and in `DarkMode::setDarkModeConfigEx`
+	 * Can be used in `dmlib::initDarkModeConfig` and in `dmlib::setDarkModeConfigEx`
 	 * with static_cast<UINT>(DarkModeType::'value').
 	 *
 	 * @note Also used internally to distinguish between light, dark, and classic modes.
 	 *
-	 * @see DarkMode::initDarkModeConfig()
-	 * @see DarkMode::setDarkModeConfigEx()
+	 * @see dmlib::initDarkModeConfig()
+	 * @see dmlib::setDarkModeConfigEx()
 	 */
 	enum class DarkModeType : unsigned char
 	{
@@ -285,6 +297,9 @@ namespace DarkMode
 	 */
 	DMLIB_API void setSysColor(int nIndex, COLORREF color);
 
+	/// Updates custom color brushes for ChooseFont and ChooseColor dialogs.
+	DMLIB_API void updateCommonDlgsBrushes();
+
 	// ========================================================================
 	// Enhancements to DarkMode.h
 	// ========================================================================
@@ -316,8 +331,9 @@ namespace DarkMode
 	DMLIB_API COLORREF setEdgeColor(COLORREF clrNew);
 	DMLIB_API COLORREF setHotEdgeColor(COLORREF clrNew);
 	DMLIB_API COLORREF setDisabledEdgeColor(COLORREF clrNew);
+	DMLIB_API COLORREF setHighlightColor(COLORREF clrNew);
 
-	DMLIB_API void setThemeColors(Colors colors);
+	DMLIB_API void setThemeColors(const Colors* colors);
 	DMLIB_API void updateThemeBrushesAndPens();
 
 	[[nodiscard]] DMLIB_API COLORREF getBackgroundColor();
@@ -335,6 +351,8 @@ namespace DarkMode
 	[[nodiscard]] DMLIB_API COLORREF getHotEdgeColor();
 	[[nodiscard]] DMLIB_API COLORREF getDisabledEdgeColor();
 
+	[[nodiscard]] DMLIB_API COLORREF getHighlightColor();
+
 	[[nodiscard]] DMLIB_API HBRUSH getBackgroundBrush();
 	[[nodiscard]] DMLIB_API HBRUSH getDlgBackgroundBrush();
 	[[nodiscard]] DMLIB_API HBRUSH getCtrlBackgroundBrush();
@@ -345,10 +363,14 @@ namespace DarkMode
 	[[nodiscard]] DMLIB_API HBRUSH getHotEdgeBrush();
 	[[nodiscard]] DMLIB_API HBRUSH getDisabledEdgeBrush();
 
+	[[nodiscard]] DMLIB_API HBRUSH getHighlightBrush();
+
 	[[nodiscard]] DMLIB_API HPEN getDarkerTextPen();
 	[[nodiscard]] DMLIB_API HPEN getEdgePen();
 	[[nodiscard]] DMLIB_API HPEN getHotEdgePen();
 	[[nodiscard]] DMLIB_API HPEN getDisabledEdgePen();
+
+	[[nodiscard]] DMLIB_API HPEN getHighlightPen();
 
 	DMLIB_API COLORREF setViewBackgroundColor(COLORREF clrNew);
 	DMLIB_API COLORREF setViewTextColor(COLORREF clrNew);
@@ -359,7 +381,7 @@ namespace DarkMode
 	DMLIB_API COLORREF setHeaderTextColor(COLORREF clrNew);
 	DMLIB_API COLORREF setHeaderEdgeColor(COLORREF clrNew);
 
-	DMLIB_API void setViewColors(ColorsView colors);
+	DMLIB_API void setViewColors(const ColorsView* colors);
 	DMLIB_API void updateViewBrushesAndPens();
 
 	[[nodiscard]] DMLIB_API COLORREF getViewBackgroundColor();
@@ -460,13 +482,18 @@ namespace DarkMode
 	/// Removes the custom color subclass from a hot key control.
 	DMLIB_API void removeHotKeyCtrlSubclass(HWND hWnd);
 
+	/// Applies custom color subclassing to a date time picker control.
+	DMLIB_API void setDTPCtrlSubclass(HWND hWnd);
+	/// Removes the custom color subclass from a date time picker control.
+	DMLIB_API void removeDTPCtrlSubclass(HWND hWnd);
+
 	// ========================================================================
 	// Child Subclassing
 	// ========================================================================
 
 	/// Applies theming and/or subclassing to all child controls of a parent window.
 	DMLIB_API void setChildCtrlsSubclassAndThemeEx(HWND hParent, bool subclass, bool theme);
-	/// Wrapper for `DarkMode::setChildCtrlsSubclassAndThemeEx`.
+	/// Wrapper for `dmlib::setChildCtrlsSubclassAndThemeEx`.
 	DMLIB_API void setChildCtrlsSubclassAndTheme(HWND hParent);
 	/// Applies theming to all child controls of a parent window.
 	DMLIB_API void setChildCtrlsTheme(HWND hParent);
@@ -512,6 +539,8 @@ namespace DarkMode
 	/// Sets dark mode title bar on supported Windows versions.
 	DMLIB_API void setDarkTitleBar(HWND hWnd);
 
+	/// Get dark mode theme name.
+	[[nodiscard]] DMLIB_API const wchar_t* getDarkModeThemeName();
 	/// Applies an experimental visual style to the specified window, if supported.
 	DMLIB_API void setDarkThemeExperimentalEx(HWND hWnd, const wchar_t* themeClassName);
 	/// Applies an experimental Explorer visual style to the specified window, if supported.
@@ -521,7 +550,7 @@ namespace DarkMode
 	/// Applies "DarkMode_Explorer" visual style to scroll bars.
 	DMLIB_API void setDarkScrollBar(HWND hWnd);
 	/// Applies "DarkMode_Explorer" visual style to tooltip controls based on context.
-	DMLIB_API void setDarkTooltips(HWND hWnd, int tooltipType);
+	DMLIB_API void setDarkTooltips(HWND hWnd, UINT tooltipType);
 	/// Applies "DarkMode_DarkTheme" visual style if supported and experimental mode is active.
 	DMLIB_API void setDarkThemeTheme(HWND hWnd);
 
@@ -531,8 +560,12 @@ namespace DarkMode
 	DMLIB_API void setDarkListView(HWND hWnd);
 	/// Replaces default list view checkboxes with themed dark-mode versions on Windows 11.
 	DMLIB_API void setDarkListViewCheckboxes(HWND hWnd);
-	/// Sets colors and edges for a RichEdit control.
+	/// Replaces default tree view checkboxes with themed dark-mode versions on Windows 11.
+	DMLIB_API void setDarkTreeViewCheckboxes(HWND hWnd);
+	/// Sets colors and edges for a rich edt control.
 	DMLIB_API void setDarkRichEdit(HWND hWnd);
+	/// Sets colors for a month calendar control.
+	DMLIB_API void setDarkMonthCalendar(HWND hWnd);
 
 	/// Applies visual styles; ctl color message and child controls subclassings to a window safely.
 	DMLIB_API void setDarkWndSafeEx(HWND hWnd, bool useWin11Features);
@@ -583,6 +616,8 @@ namespace DarkMode
 	DMLIB_API void setWindowExStyle(HWND hWnd, bool setExStyle, LONG_PTR exStyleFlag);
 	/// Replaces an extended edge (e.g. client edge) with a standard window border.
 	DMLIB_API void replaceExEdgeWithBorder(HWND hWnd, bool replace, LONG_PTR exStyleFlag);
+	/// Safely toggles `WS_EX_CLIENTEDGE` with `WS_BORDER`.
+	DMLIB_API void replaceClientEdgeWithBorderSafeEx(HWND hWnd, bool replace);
 	/// Safely toggles `WS_EX_CLIENTEDGE` with `WS_BORDER` based on dark mode state.
 	DMLIB_API void replaceClientEdgeWithBorderSafe(HWND hWnd);
 
@@ -695,7 +730,7 @@ namespace DarkMode
 	 *
 	 * CHOOSEFONT cf{};
 	 * cf.Flags |= CF_ENABLEHOOK | CF_ENABLETEMPLATE;
-	 * cf.lpfnHook = static_cast<LPCFHOOKPROC>(DarkMode::HookDlgProc);
+	 * cf.lpfnHook = static_cast<LPCFHOOKPROC>(dmlib::HookDlgProc);
 	 * cf.hInstance = GetModuleHandle(nullptr);
 	 * cf.lpTemplateName = MAKEINTRESOURCE(IDD_DARK_FONT_DIALOG);
 	 * ```
@@ -718,7 +753,7 @@ namespace DarkMode
 	 * @brief Wrapper for `TaskDialogIndirect` with dark mode support.
 	 *
 	 * Parameters are same as for `TaskDialogIndirect`.
-	 * Should be used with `DarkMode::setDarkTaskDlg`
+	 * Should be used with `dmlib::setDarkTaskDlg`
 	 * used in task dialog callback procedure.
 	 *
 	 * ## Example of Callback Procedure
@@ -733,22 +768,25 @@ namespace DarkMode
 	 * {
 	 *     if (uMsg == TDN_DIALOG_CONSTRUCTED)
 	 *     {
-	 *          DarkMode::setDarkTaskDlg(hWnd);
+	 *          dmlib::setDarkTaskDlg(hWnd);
 	 *     }
 	 *     return S_OK;
 	 * }
 	 * ```
 	 *
-	 * @see DarkMode::DarkTaskDlgCallback()
-	 * @see DarkMode::setDarkTaskDlg()
+	 * @see dmlib::DarkTaskDlgCallback()
+	 * @see dmlib::setDarkTaskDlg()
 	 */
 	DMLIB_API HRESULT darkTaskDialogIndirect(const TASKDIALOGCONFIG* pTaskConfig, int* pnButton, int* pnRadioButton, BOOL* pfVerificationFlagChecked);
+
+	/// Displays a message box as task dialog with themed styling.
+	DMLIB_API int darkMessageBoxW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType);
 
 #ifdef __cplusplus
 	} // extern "C"
 #endif
 
-} // namespace DarkMode
+} // namespace dmlib
 
 #else
 #define _DARKMODELIB_NOT_USED

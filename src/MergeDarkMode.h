@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "DarkModeSubclass.h"
+#include "Darkmodelib.h"
 
 namespace ATL
 {

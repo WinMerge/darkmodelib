@@ -134,7 +134,7 @@ namespace WinMergeDarkMode
 		static constexpr double maxLightness = 1.0;
 
 		static constexpr int threshold = 240;
-		const COLORREF darkBackgroundColor = DarkMode::getDlgBackgroundColor();
+		const COLORREF darkBackgroundColor = dmlib::getDlgBackgroundColor();
 
 		ConvertTo32Bit(image);
 		if (image.GetBPP() != 32)
@@ -212,7 +212,7 @@ namespace WinMergeDarkMode
 
 			case WM_CTLCOLORSTATIC:
 			{
-				if (DarkMode::isEnabled())
+				if (dmlib::isEnabled())
 				{
 					auto hdc = reinterpret_cast<HDC>(wParam);
 
@@ -221,7 +221,7 @@ namespace WinMergeDarkMode
 
 					if (id == IDC_GNU_ASCII)
 					{
-						::SetTextColor(hdc, DarkMode::getDarkerTextColor());
+						::SetTextColor(hdc, dmlib::getDarkerTextColor());
 						::SetBkMode(hdc, TRANSPARENT);
 						return reinterpret_cast<LRESULT>(static_cast<HBRUSH>(::GetStockObject(NULL_BRUSH)));
 					}

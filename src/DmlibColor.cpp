@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 /*
- * Copyright (c) 2025 ozone10
+ * Copyright (c) 2025-2026 ozone10
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -21,16 +21,16 @@
 
 #include <cmath>
 
-#include "DarkModeSubclass.h"
+#include "Darkmodelib.h"
 
 namespace dmlib_win32api
 {
-	[[nodiscard]] bool IsDarkModeActive();
-}
+	[[nodiscard]] bool IsDarkModeActive() noexcept;
+} // namespace dmlib_win32api
 
-DarkMode::Colors dmlib_color::getLightColors()
+dmlib::Colors dmlib_color::getLightColors() noexcept
 {
-	return DarkMode::Colors{
+	return dmlib::Colors{
 		::GetSysColor(COLOR_3DFACE),        // background
 		::GetSysColor(COLOR_WINDOW),        // ctrlBackground
 		dmlib_color::HEXRGB(0xC0DCF3),      // hotBackground
@@ -42,7 +42,8 @@ DarkMode::Colors dmlib_color::getLightColors()
 		::GetSysColor(COLOR_HOTLIGHT),      // linkTextColor
 		dmlib_color::HEXRGB(0x8D8D8D),      // edgeColor
 		::GetSysColor(COLOR_HIGHLIGHT),     // hotEdgeColor
-		::GetSysColor(COLOR_GRAYTEXT)       // disabledEdgeColor
+		::GetSysColor(COLOR_GRAYTEXT),      // disabledEdgeColor
+		::GetSysColor(COLOR_HOTLIGHT)       // highlight
 	};
 }
 
@@ -56,9 +57,9 @@ DarkMode::Colors dmlib_color::getLightColors()
  *
  * @note Based on: https://stackoverflow.com/a/56678483
  */
-double dmlib_color::calculatePerceivedLightness(COLORREF clr)
+double dmlib_color::calculatePerceivedLightness(COLORREF clr) noexcept
 {
-	auto linearValue = [](double colorChannel) -> double
+	auto linearValue = [](double colorChannel) noexcept
 	{
 		colorChannel /= 255.0;
 
@@ -100,7 +101,7 @@ double dmlib_color::calculatePerceivedLightness(COLORREF clr)
 	return ((std::pow(luminance, oneThird) * scalingFactor) - offset);
 }
 
-static COLORREF adjustClrLightness(COLORREF clr, bool useDark)
+static COLORREF adjustClrLightness(COLORREF clr, bool useDark) noexcept
 {
 	WORD h = 0;
 	WORD s = 0;
@@ -117,15 +118,13 @@ static COLORREF adjustClrLightness(COLORREF clr, bool useDark)
 		l += luminanceAdjustment;
 		return useDark ? ::ColorHLSToRGB(h, l, s) : clr;
 	}
-	else
-	{
-		s += saturationAdjustment;
-		l -= luminanceAdjustment;
-		return useDark ? clr : ::ColorHLSToRGB(h, l, s);
-	}
+
+	s += saturationAdjustment;
+	l -= luminanceAdjustment;
+	return useDark ? clr : ::ColorHLSToRGB(h, l, s);
 }
 
-COLORREF dmlib_color::getAccentColor(bool adjust)
+COLORREF dmlib_color::getAccentColor(bool adjust) noexcept
 {
 	BOOL opaque = TRUE;
 	COLORREF clrAccent = 0;

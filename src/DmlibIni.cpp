@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 /*
- * Copyright (c) 2025 ozone10
+ * Copyright (c) 2025-2026 ozone10
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -14,16 +14,23 @@
 
 #include "DmlibIni.h"
 
+#ifndef _DARKMODELIB_NO_INI_CONFIG
+
 #include <windows.h>
 
 #include <algorithm>
 #include <array>
 #include <cwchar>
 #include <cwctype>
-#include <exception>
+#include <stdexcept>
 #include <string>
 
 #include "DmlibColor.h"
+
+#ifdef __clang__
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wunsafe-buffer-usage-in-libc-call" // function 'wcsrchr' is unsafe
+#endif
 
 /**
  * @brief Constructs a full path to an `.ini` file located next to the executable.
@@ -39,8 +46,7 @@
 std::wstring dmlib_ini::getIniPath(const std::wstring& iniFilename)
 {
 	std::array<wchar_t, MAX_PATH> buffer{};
-	const auto strLen = static_cast<size_t>(::GetModuleFileNameW(nullptr, buffer.data(), MAX_PATH));
-	if (strLen == 0)
+	if (::GetModuleFileNameW(nullptr, buffer.data(), MAX_PATH) == 0)
 	{
 		return L"";
 	}
@@ -52,7 +58,7 @@ std::wstring dmlib_ini::getIniPath(const std::wstring& iniFilename)
 	}
 
 	*lastSlash = L'\0';
-	std::wstring iniPath(buffer.data());
+	auto iniPath = std::wstring(buffer.data());
 	iniPath += L"\\" + iniFilename + L".ini";
 	return iniPath;
 }
@@ -65,7 +71,7 @@ std::wstring dmlib_ini::getIniPath(const std::wstring& iniFilename)
  * @param[in] filePath Path to the file to check.
  * @return `true` if the file exists and is not a directory, otherwise `false`.
  */
-bool dmlib_ini::fileExists(const std::wstring& filePath)
+bool dmlib_ini::fileExists(const std::wstring& filePath) noexcept
 {
 	const DWORD dwAttrib = ::GetFileAttributesW(filePath.c_str());
 	return (dwAttrib != INVALID_FILE_ATTRIBUTES && ((dwAttrib & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY));
@@ -98,15 +104,15 @@ bool dmlib_ini::setClrFromIni(
 	}
 
 	static constexpr size_t maxStrLen = 6;
-	std::wstring buffer(maxStrLen + 1, L'\0');
+	auto buffer = std::wstring(maxStrLen + 1, L'\0');
 
-	const auto len = static_cast<size_t>(::GetPrivateProfileStringW(
+	const size_t len = ::GetPrivateProfileStringW(
 		sectionName.c_str()
 		, keyName.c_str()
 		, L""
 		, buffer.data()
-		, static_cast<DWORD>(buffer.size())
-		, iniFilePath.c_str()));
+		, static_cast<DWORD>(buffer.length())
+		, iniFilePath.c_str());
 
 	if (len != maxStrLen)
 	{
@@ -115,7 +121,8 @@ bool dmlib_ini::setClrFromIni(
 
 	buffer.resize(len); // remove extra '\0'
 
-	if (!std::all_of(buffer.begin(), buffer.end(), std::iswxdigit))
+	if (!std::all_of(buffer.begin(), buffer.end(),
+		[](wchar_t ch) noexcept { return std::iswxdigit(ch); }))
 	{
 		return false;
 	}
@@ -125,10 +132,20 @@ bool dmlib_ini::setClrFromIni(
 		static constexpr int baseHex = 16;
 		*clr = dmlib_color::HEXRGB(std::stoul(buffer, nullptr, baseHex));
 	}
-	catch (const std::exception&)
+	catch (const std::invalid_argument&)
+	{
+		return false;
+	}
+	catch (const std::out_of_range&)
 	{
 		return false;
 	}
 
 	return true;
 }
+
+#ifdef __clang__
+	#pragma clang diagnostic pop
+#endif
+
+#endif // _DARKMODELIB_NO_INI_CONFIG

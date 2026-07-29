@@ -14,12 +14,12 @@
 
 #include "DmlibSubclass.h"
 
-#if defined(_DARKMODELIB_PREFER_THEME)
+#ifdef _DARKMODELIB_PREFER_THEME
 namespace dmlib_win32api
 {
-	[[nodiscard]] bool IsWindows10();
-	[[nodiscard]] bool IsDarkModeSupported();
-}
+	[[nodiscard]] bool IsWindows10() noexcept;
+	[[nodiscard]] bool IsDarkModeSupported() noexcept;
+} // namespace dmlib_win32api
 #endif
 
 /**
@@ -29,9 +29,9 @@ namespace dmlib_win32api
  *
  * @return `true` if themed appearance is preferred and supported.
  */
-bool dmlib_subclass::isThemePrefered()
+bool dmlib_subclass::isThemePrefered() noexcept
 {
-#if defined(_DARKMODELIB_PREFER_THEME)
+#ifdef _DARKMODELIB_PREFER_THEME
 	return dmlib_win32api::IsWindows10() && dmlib_win32api::IsDarkModeSupported();
 #else
 	return false;
